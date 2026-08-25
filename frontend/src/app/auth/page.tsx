@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NexoraLogo } from "@/components/common/Logo";
+import { ThemeToggle } from "@/components/navbar/ThemeToggle";
 import {
   Eye,
   EyeOff,
@@ -202,30 +203,57 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-slate-950 text-slate-100 py-12 px-4 sm:px-6 lg:px-8 selection:bg-sky-500 selection:text-white">
-      {/* Dynamic Background Glass Ambient Orbs */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-gradient-to-tr from-sky-500/20 to-indigo-600/20 blur-[130px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-gradient-to-br from-indigo-500/20 to-purple-600/20 blur-[130px] rounded-full pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-sky-500/5 via-indigo-500/5 to-cyan-400/5 blur-[160px] rounded-full pointer-events-none" />
+    <div className="min-h-screen w-full flex flex-col justify-between relative overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-6 px-4 sm:px-6 lg:px-8 selection:bg-sky-500 selection:text-white transition-colors duration-300">
+      {/* Top Header Bar with Theme Toggle */}
+      <div className="w-full max-w-7xl mx-auto flex items-center justify-between py-2 z-20">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold backdrop-blur-md transition-all duration-200 shadow-sm group"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform text-sky-500 dark:text-sky-400" />
+          <span>Back to Home</span>
+        </Link>
 
-      {/* Main Glassmorphic Auth Container Card */}
-      <div className="relative w-full max-w-lg mx-auto bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-sky-500/10 z-10 transition-all duration-300">
+        {/* Right Action Bar: Theme Toggle & Security Status */}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-600 dark:text-slate-400 backdrop-blur-md shadow-sm">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
+            <span>Nexora AI Security</span>
+          </div>
+
+          <div className="bg-white/90 dark:bg-slate-900/90 p-1 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm backdrop-blur-md">
+            <ThemeToggle />
+          </div>
+        </div>
+      </div>
+
+      {/* Geometric Dot & Mesh Background Grid Overlay */}
+      <div className="absolute inset-0 bg-grid-dots opacity-40 dark:opacity-60 pointer-events-none transition-opacity" />
+      <div className="absolute inset-0 bg-grid-mesh opacity-40 dark:opacity-40 pointer-events-none transition-opacity" />
+
+      {/* Dynamic Background Ambient Glowing Orbs */}
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-gradient-to-tr from-sky-400/20 to-indigo-500/20 dark:from-sky-500/30 dark:to-indigo-600/30 blur-[140px] rounded-full pointer-events-none transition-all" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-gradient-to-br from-indigo-400/20 to-purple-500/20 dark:from-indigo-500/30 dark:to-purple-600/30 blur-[140px] rounded-full pointer-events-none transition-all" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[750px] bg-gradient-to-tr from-sky-400/10 via-indigo-400/10 to-cyan-300/10 dark:from-sky-500/15 dark:via-indigo-500/15 dark:to-cyan-400/15 blur-[180px] rounded-full pointer-events-none transition-all" />
+
+      {/* Centered Main Glassmorphic Auth Container Card */}
+      <div className="w-full max-w-lg mx-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/90 rounded-3xl p-6 sm:p-10 shadow-2xl shadow-slate-200/50 dark:shadow-sky-500/10 z-10 my-auto py-8 transition-all duration-300">
         
         {/* Header Branding */}
         <div className="text-center space-y-4 mb-8">
           <div className="flex justify-center">
-            <NexoraLogo size="lg" />
+            <NexoraLogo size="lg" variant="auto" />
           </div>
 
           <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {mode === "login" && "Job Seeker & Candidate Portal"}
               {mode === "signup" && "Create Your Nexora Account"}
               {mode === "signup_otp" && "Verify Email Address"}
               {mode === "forgot_email" && "Reset Password"}
               {mode === "forgot_otp" && "Set New Password"}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
               {mode === "login" && "Access your AI career copilot, resume ATS score, and mock interviews."}
               {mode === "signup" && "Start your AI-powered career journey with targeted placement tools."}
               {mode === "signup_otp" && `Enter the 6-digit OTP code sent to ${email}`}
@@ -237,7 +265,7 @@ export default function AuthPage() {
 
         {/* Tab Switcher (Only visible for Login / Sign Up modes) */}
         {(mode === "login" || mode === "signup") && (
-          <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-slate-950 border border-slate-800 mb-8">
+          <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 mb-8 transition-colors">
             <button
               type="button"
               onClick={() => {
@@ -247,7 +275,7 @@ export default function AuthPage() {
               className={`py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 ${
                 mode === "login"
                   ? "bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md shadow-sky-500/20"
-                  : "text-slate-400 hover:text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Sign In
@@ -261,7 +289,7 @@ export default function AuthPage() {
               className={`py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 ${
                 mode === "signup"
                   ? "bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md shadow-sky-500/20"
-                  : "text-slate-400 hover:text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Sign Up
@@ -274,18 +302,18 @@ export default function AuthPage() {
           <div
             className={`p-4 rounded-2xl mb-6 border text-xs sm:text-sm font-medium flex items-start gap-3 transition-all ${
               notification.type === "error"
-                ? "bg-rose-500/10 border-rose-500/30 text-rose-300"
+                ? "bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-300"
                 : notification.type === "success"
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                : "bg-sky-500/10 border-sky-500/30 text-sky-300"
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-300"
+                : "bg-sky-500/10 border-sky-500/30 text-sky-600 dark:text-sky-300"
             }`}
           >
             {notification.type === "error" ? (
-              <AlertCircle className="w-5 h-5 shrink-0 text-rose-400 mt-0.5" />
+              <AlertCircle className="w-5 h-5 shrink-0 text-rose-500 dark:text-rose-400 mt-0.5" />
             ) : notification.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-400 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-500 dark:text-emerald-400 mt-0.5" />
             ) : (
-              <Sparkles className="w-5 h-5 shrink-0 text-sky-400 mt-0.5" />
+              <Sparkles className="w-5 h-5 shrink-0 text-sky-500 dark:text-sky-400 mt-0.5" />
             )}
             <span className="leading-relaxed">{notification.message}</span>
           </div>
@@ -299,7 +327,7 @@ export default function AuthPage() {
               type="button"
               onClick={() => handleOAuthLogin("Google")}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-700/80 text-white font-semibold text-xs sm:text-sm transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200/80 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-white font-semibold text-xs sm:text-sm transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-sky-500/50 shadow-sm"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -317,7 +345,7 @@ export default function AuthPage() {
                 type="button"
                 onClick={() => handleOAuthLogin("LinkedIn")}
                 disabled={loading}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-700/80 text-white font-semibold text-xs transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200/80 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-white font-semibold text-xs transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500/50 shadow-sm"
               >
                 <svg className="w-4 h-4 fill-[#0A66C2]" viewBox="0 0 24 24">
                   <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.25V10.9H6.46M7.86 6.74a1.65 1.65 0 1 0 0 3.3 1.65 1.65 0 0 0 0-3.3z" />
@@ -330,9 +358,9 @@ export default function AuthPage() {
                 type="button"
                 onClick={() => handleOAuthLogin("GitHub")}
                 disabled={loading}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-700/80 text-white font-semibold text-xs transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200/80 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-white font-semibold text-xs transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500/50 shadow-sm"
               >
-                <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 fill-slate-800 dark:fill-white" viewBox="0 0 24 24">
                   <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
                 </svg>
                 <span>GitHub</span>
@@ -341,8 +369,8 @@ export default function AuthPage() {
 
             {/* Divider */}
             <div className="relative flex items-center justify-center pt-2">
-              <div className="border-t border-slate-800 w-full" />
-              <span className="bg-slate-900 px-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest absolute">
+              <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
+              <span className="bg-white dark:bg-slate-900 px-3 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest absolute transition-colors">
                 OR
               </span>
             </div>
@@ -356,7 +384,7 @@ export default function AuthPage() {
           {mode === "signup" && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                   First Name <span className="text-sky-500">*</span>
                 </label>
                 <input
@@ -365,11 +393,11 @@ export default function AuthPage() {
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="John"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                   Last Name <span className="text-sky-500">*</span>
                 </label>
                 <input
@@ -378,7 +406,7 @@ export default function AuthPage() {
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Doe"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors"
                 />
               </div>
             </div>
@@ -386,7 +414,7 @@ export default function AuthPage() {
 
           {(mode === "login" || mode === "signup" || mode === "forgot_email") && (
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Email Address <span className="text-sky-500">*</span>
               </label>
               <div className="relative">
@@ -396,9 +424,9 @@ export default function AuthPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="example@email.com"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors"
                 />
-                <Mail className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Mail className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
           )}
@@ -406,7 +434,7 @@ export default function AuthPage() {
           {(mode === "login" || mode === "signup" || mode === "forgot_otp") && (
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-slate-300">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   {mode === "forgot_otp" ? "New Password" : "Password"}{" "}
                   <span className="text-sky-500">*</span>
                 </label>
@@ -417,7 +445,7 @@ export default function AuthPage() {
                       setMode("forgot_email");
                       setNotification(null);
                     }}
-                    className="text-xs font-semibold text-sky-400 hover:text-sky-300 transition-colors"
+                    className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline transition-colors"
                   >
                     Forgot password?
                   </button>
@@ -430,12 +458,12 @@ export default function AuthPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors pr-10"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -445,7 +473,7 @@ export default function AuthPage() {
 
           {mode === "forgot_otp" && (
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Confirm New Password <span className="text-sky-500">*</span>
               </label>
               <div className="relative">
@@ -455,12 +483,12 @@ export default function AuthPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors pr-10"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -471,7 +499,7 @@ export default function AuthPage() {
           {/* OTP INPUTS (Used for Signup OTP & Forgot Password OTP) */}
           {(mode === "signup_otp" || mode === "forgot_otp") && (
             <div className="space-y-4 py-2">
-              <label className="block text-xs font-semibold text-slate-300 text-center">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 text-center">
                 Enter 6-Digit Verification OTP Code <span className="text-sky-500">*</span>
               </label>
 
@@ -489,26 +517,26 @@ export default function AuthPage() {
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                    className="w-11 h-12 text-center text-lg font-bold rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+                    className="w-11 h-12 text-center text-lg font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
                   />
                 ))}
               </div>
 
               {/* Resend Timer & Button */}
-              <div className="flex items-center justify-between text-xs text-slate-400 pt-2">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2">
                 <span>Didn&apos;t receive code?</span>
                 {canResend ? (
                   <button
                     type="button"
                     onClick={handleResendOtp}
-                    className="inline-flex items-center gap-1 font-bold text-sky-400 hover:text-sky-300 transition-colors"
+                    className="inline-flex items-center gap-1 font-bold text-sky-600 dark:text-sky-400 hover:underline transition-colors"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                     <span>Resend OTP Code</span>
                   </button>
                 ) : (
                   <span className="font-semibold text-slate-500">
-                    Resend in <strong className="text-sky-400">{resendTimer}s</strong>
+                    Resend in <strong className="text-sky-600 dark:text-sky-400">{resendTimer}s</strong>
                   </span>
                 )}
               </div>
@@ -518,12 +546,12 @@ export default function AuthPage() {
           {/* CHECKBOXES */}
           {mode === "login" && (
             <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400 hover:text-slate-200">
+              <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded bg-slate-950 border-slate-800 text-sky-500 focus:ring-sky-500/50"
+                  className="w-4 h-4 rounded bg-slate-100 dark:bg-slate-950 border-slate-300 dark:border-slate-800 text-sky-500 focus:ring-sky-500/50"
                 />
                 <span>Remember me for 30 days</span>
               </label>
@@ -532,20 +560,20 @@ export default function AuthPage() {
 
           {mode === "signup" && (
             <div className="pt-1">
-              <label className="flex items-start gap-2 cursor-pointer text-xs text-slate-400 leading-normal">
+              <label className="flex items-start gap-2 cursor-pointer text-xs text-slate-600 dark:text-slate-400 leading-normal">
                 <input
                   type="checkbox"
                   checked={agreeTerms}
                   onChange={(e) => setAgreeTerms(e.target.checked)}
-                  className="w-4 h-4 rounded bg-slate-950 border-slate-800 text-sky-500 focus:ring-sky-500/50 mt-0.5"
+                  className="w-4 h-4 rounded bg-slate-100 dark:bg-slate-950 border-slate-300 dark:border-slate-800 text-sky-500 focus:ring-sky-500/50 mt-0.5"
                 />
                 <span>
                   By signing up, I agree to the{" "}
-                  <Link href="/contact" className="text-sky-400 hover:underline">
+                  <Link href="/contact" className="text-sky-600 dark:text-sky-400 hover:underline">
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link href="/contact" className="text-sky-400 hover:underline">
+                  <Link href="/contact" className="text-sky-600 dark:text-sky-400 hover:underline">
                     Privacy Policy
                   </Link>
                 </span>
@@ -589,7 +617,7 @@ export default function AuthPage() {
                   setMode("login");
                   setNotification(null);
                 }}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Back to Sign In</span>
@@ -599,10 +627,10 @@ export default function AuthPage() {
         </form>
 
         {/* Footer Sub-Links */}
-        <div className="mt-8 pt-6 border-t border-slate-800/80 text-center space-y-2">
-          <p className="text-xs text-slate-500">
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800/80 text-center space-y-2 transition-colors">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Looking for company recruitment or enterprise coach access?{" "}
-            <Link href="/contact" className="text-sky-400 hover:underline font-medium">
+            <Link href="/contact" className="text-sky-600 dark:text-sky-400 hover:underline font-medium">
               Contact Enterprise Support
             </Link>
           </p>
@@ -611,4 +639,3 @@ export default function AuthPage() {
     </div>
   );
 }
-

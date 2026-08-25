@@ -11,7 +11,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
           {/* Column 1: Brand & Bio */}
           <div className="col-span-2 space-y-4 pr-4">
-            <NexoraLogo size="md" />
+            <NexoraLogo size="md" variant="light" />
             <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
               Your AI Career Copilot. An all-in-one AI career intelligence platform for resumes, mock interviews, coding challenges, GitHub analysis, and placement readiness.
             </p>
