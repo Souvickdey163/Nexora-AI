@@ -1,11 +1,23 @@
-import { PlaceholderPage } from "@/components/common/PlaceholderPage";
+import { Metadata } from "next";
+import { FeatureLayout } from "@/components/layout/FeatureLayout";
+import { InterviewWorkspace } from "@/components/interview/InterviewWorkspace";
+
+export const metadata: Metadata = {
+  title: "AI Mock Interview & Role Simulator | Nexora AI",
+  description:
+    "Practice HR, technical, behavioral, and system design interviews with real-time AI voice simulation, live transcript evaluation, and 5-dimension scoring rubric.",
+};
 
 export default function InterviewPage() {
   return (
-    <PlaceholderPage
-      title="AI Mock Interview Simulator"
+    <FeatureLayout
+      featureId="mock-interview"
+      title="AI Mock Interview"
+      subtitle="Simulate real technical, behavioral, and system-design interviews with real-time AI voice feedback and transcript analysis."
       category="Interview Preparation"
-      description="Practice HR, Technical, Behavioral, and System Design rounds with audio/transcript STAR feedback."
-    />
+      badge="Interactive"
+    >
+      <InterviewWorkspace />
+    </FeatureLayout>
   );
 }

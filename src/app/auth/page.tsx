@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NexoraLogo } from "@/components/common/Logo";
 import { ThemeToggle } from "@/components/navbar/ThemeToggle";
+import { authApi } from "@/lib/api/auth";
 import {
   Eye,
   EyeOff,
@@ -40,7 +41,7 @@ export default function AuthPage() {
   // OTP Fields (6 Digits)
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const otpInputsRef = useRef<(HTMLInputElement | null)[]>([]);
-  const [resendTimer, setResendTimer] = useState(30);
+  const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
 
   // Status & Feedback State
@@ -83,31 +84,36 @@ export default function AuthPage() {
     }
   };
 
-  const handleResendOtp = () => {
-    setResendTimer(30);
-    setCanResend(false);
-    setOtp(["", "", "", "", "", ""]);
-    setNotification({
-      type: "info",
-      message: `A new 6-digit OTP verification code has been sent to ${email}.`,
-    });
+  const handleResendOtp = async () => {
+    setLoading(true);
+    const res = await authApi.resendOtp(email);
+    setLoading(false);
+    if (res.success) {
+      setResendTimer(60);
+      setCanResend(false);
+      setOtp(["", "", "", "", "", ""]);
+      setNotification({
+        type: "info",
+        message: res.message || `A new 6-digit OTP verification code has been sent to ${email}.`,
+      });
+    } else {
+      setNotification({ type: "error", message: res.error || "Failed to resend OTP code." });
+    }
   };
 
-  // OAuth Simulation Handlers
+  // OAuth Handlers - Redirect to Real Backend OAuth Endpoints
   const handleOAuthLogin = (provider: "Google" | "LinkedIn" | "GitHub") => {
+    const providerKey = provider.toLowerCase() as "google" | "github" | "linkedin";
     setLoading(true);
     setNotification({
       type: "info",
-      message: `Authenticating with ${provider}... Redirecting to Nexora AI Dashboard.`,
+      message: `Connecting to ${provider}... Redirecting to OAuth server.`,
     });
-    setTimeout(() => {
-      setLoading(false);
-      router.push("/dashboard");
-    }, 1500);
+    window.location.href = authApi.getOAuthRedirectUrl(providerKey);
   };
 
-  // Form Submission Handler
-  const handleSubmit = (e: React.FormEvent) => {
+  // Real Form Submission Handler
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setNotification(null);
 
@@ -117,11 +123,22 @@ export default function AuthPage() {
         return;
       }
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        setNotification({ type: "success", message: "Sign in successful! Redirecting..." });
+      const res = await authApi.login({ email, password });
+      setLoading(false);
+
+      if (res.success) {
+        setNotification({ type: "success", message: res.message || "Sign in successful! Redirecting..." });
         setTimeout(() => router.push("/dashboard"), 800);
-      }, 1200);
+      } else {
+        if (res.code === "EMAIL_UNVERIFIED") {
+          setNotification({ type: "info", message: res.error || "Email unverified. Verification OTP code sent." });
+          setMode("signup_otp");
+          setResendTimer(60);
+          setCanResend(false);
+        } else {
+          setNotification({ type: "error", message: res.error || "Sign in failed. Invalid credentials." });
+        }
+      }
     }
 
     if (mode === "signup") {
@@ -134,16 +151,20 @@ export default function AuthPage() {
         return;
       }
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
+      const res = await authApi.register({ firstName, lastName, email, password });
+      setLoading(false);
+
+      if (res.success) {
         setMode("signup_otp");
-        setResendTimer(30);
+        setResendTimer(60);
         setCanResend(false);
         setNotification({
           type: "info",
-          message: `Verification OTP sent! Check your inbox at ${email}.`,
+          message: res.message || `Verification OTP sent! Check your inbox at ${email}.`,
         });
-      }, 1200);
+      } else {
+        setNotification({ type: "error", message: res.error || "Registration failed." });
+      }
     }
 
     if (mode === "signup_otp") {
@@ -153,11 +174,15 @@ export default function AuthPage() {
         return;
       }
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        setNotification({ type: "success", message: "Email verified successfully! Welcome to Nexora AI." });
+      const res = await authApi.verifyEmail({ email, otp: fullOtp });
+      setLoading(false);
+
+      if (res.success) {
+        setNotification({ type: "success", message: res.message || "Email verified successfully! Welcome to Nexora AI." });
         setTimeout(() => router.push("/dashboard"), 1000);
-      }, 1200);
+      } else {
+        setNotification({ type: "error", message: res.error || "Invalid or expired OTP code." });
+      }
     }
 
     if (mode === "forgot_email") {
@@ -166,16 +191,20 @@ export default function AuthPage() {
         return;
       }
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
+      const res = await authApi.forgotPassword(email);
+      setLoading(false);
+
+      if (res.success) {
         setMode("forgot_otp");
-        setResendTimer(30);
+        setResendTimer(60);
         setCanResend(false);
         setNotification({
           type: "info",
-          message: `Password reset OTP sent to ${email}.`,
+          message: res.message || `Password reset OTP code sent to ${email}.`,
         });
-      }, 1200);
+      } else {
+        setNotification({ type: "error", message: res.error || "Failed to request password reset." });
+      }
     }
 
     if (mode === "forgot_otp") {
@@ -189,16 +218,20 @@ export default function AuthPage() {
         return;
       }
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        setNotification({ type: "success", message: "Password reset successful! Please sign in with your new password." });
+      const res = await authApi.resetPassword({ email, otp: fullOtp, newPassword: password });
+      setLoading(false);
+
+      if (res.success) {
+        setNotification({ type: "success", message: res.message || "Password reset successful! Please sign in with your new password." });
         setTimeout(() => {
           setMode("login");
           setPassword("");
           setConfirmPassword("");
           setOtp(["", "", "", "", "", ""]);
         }, 1200);
-      }, 1200);
+      } else {
+        setNotification({ type: "error", message: res.error || "Failed to reset password." });
+      }
     }
   };
 

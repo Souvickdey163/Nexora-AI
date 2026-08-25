@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚡ Nexora AI - Next-Gen AI Career & Placement Intelligence Platform
 
-## Getting Started
+Nexora AI is a comprehensive, production-ready AI-driven platform for job seekers, software engineers, and candidates preparing for tech placement interviews, resume optimization, coding practice, and career mentorship.
 
-First, run the development server:
+---
 
+## 🏗️ Architecture
+
+- **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Lucide Icons.
+- **Backend API**: Express.js, TypeScript, Node.js.
+- **Database & ORM**: PostgreSQL + Prisma ORM.
+- **Authentication**: JWT, HTTP-only Refresh Token Cookies, Bcrypt Password Hashing, Nodemailer Real Email OTP, Zod Validation, OAuth 2.0 (Google, GitHub, LinkedIn).
+- **Security**: Helmet, CORS, Express Rate Limiting (login brute-force, OTP spam prevention).
+
+---
+
+## ⚡ Quick Start
+
+### 1. Environment Setup
+Copy `.env.example` to `.env` in the root folder:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Frontend Development Server (Port 3000)
+```bash
+npm install
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Backend Express API Server (Port 5000)
+```bash
+cd backend
+npm install
+npm run prisma:generate
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Check API Health: [http://localhost:5000/health](http://localhost:5000/health)
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 📖 Setup & Configuration Guides
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Detailed step-by-step documentation for setup, database, OAuth, and API references:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 🔒 **[AUTH_SETUP.md](./AUTH_SETUP.md)** - Complete Authentication setup guide.
+- 🗄️ **[DATABASE_SETUP.md](./DATABASE_SETUP.md)** - PostgreSQL and Prisma setup guide (macOS & Docker).
+- 🔑 **[OAUTH_SETUP.md](./OAUTH_SETUP.md)** - Step-by-step setup for Google, GitHub, and LinkedIn OAuth credentials.
+- 📑 **[API.md](./API.md)** - Complete REST API endpoint documentation.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧪 Running Backend Tests
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To run the backend test suite:
+
+```bash
+cd backend
+npm test
+```

@@ -1,11 +1,22 @@
-import { PlaceholderPage } from "@/components/common/PlaceholderPage";
+import { Metadata } from "next";
+import { FeatureLayout } from "@/components/layout/FeatureLayout";
+import { CodingArenaWorkspace } from "@/components/coding/CodingArenaWorkspace";
+
+export const metadata: Metadata = {
+  title: "Coding Arena & DSA Practice | Nexora AI",
+  description:
+    "Solve curated Data Structures & Algorithms coding challenges in an integrated multi-language code editor with automated time & space complexity AI reviews.",
+};
 
 export default function CodingPage() {
   return (
-    <PlaceholderPage
+    <FeatureLayout
+      featureId="coding-arena"
       title="Coding Arena"
-      category="DSA & Problem Solving"
-      description="Solve tagged DSA problems with multi-language support, automated complexity analysis, and step-by-step AI hints."
-    />
+      subtitle="Master Data Structures & Algorithms with multi-language code editing, instant test execution, and AI complexity reviews."
+      category="Problem Solving"
+    >
+      <CodingArenaWorkspace />
+    </FeatureLayout>
   );
 }

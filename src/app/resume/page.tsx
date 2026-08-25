@@ -1,6 +1,5 @@
 import { Metadata } from "next";
-import { Navbar } from "@/components/navbar/Navbar";
-import { Footer } from "@/components/footer/Footer";
+import { FeatureLayout } from "@/components/layout/FeatureLayout";
 import { ResumePageClient } from "@/components/resume/ResumePageClient";
 
 export const metadata: Metadata = {
@@ -11,12 +10,14 @@ export const metadata: Metadata = {
 
 export default function ResumePage() {
   return (
-    <div className="min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
-      <Navbar />
-      <main className="flex-1">
-        <ResumePageClient />
-      </main>
-      <Footer />
-    </div>
+    <FeatureLayout
+      featureId="resume-intelligence"
+      title="AI Resume Intelligence"
+      subtitle="Turn Your Resume Into a Career Advantage with real-time ATS scoring, keyword extraction, and AI bullet rewriter."
+      category="Resume & ATS Optimization"
+      badge="Popular"
+    >
+      <ResumePageClient />
+    </FeatureLayout>
   );
 }
