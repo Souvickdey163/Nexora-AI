@@ -4,58 +4,88 @@ Nexora AI is a comprehensive, production-ready AI-driven platform for job seeker
 
 ---
 
-## 🏗️ Architecture
+## 📁 Project Directory Structure
 
-- **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Lucide Icons.
-- **Backend API**: Express.js, TypeScript, Node.js.
-- **Database & ORM**: PostgreSQL + Prisma ORM.
-- **Authentication**: JWT, HTTP-only Refresh Token Cookies, Bcrypt Password Hashing, Nodemailer Real Email OTP, Zod Validation, OAuth 2.0 (Google, GitHub, LinkedIn).
-- **Security**: Helmet, CORS, Express Rate Limiting (login brute-force, OTP spam prevention).
+```
+Nexora/
+├── 📱 frontend/               # Next.js 16 App (React 19, TypeScript, Tailwind CSS)
+│   ├── src/                  # App Router pages, AI feature workspaces, components
+│   ├── public/               # Static assets & icons
+│   └── package.json          # Frontend scripts & dependencies
+│
+├── ⚙️ backend/                # Express + TypeScript + Prisma API Server
+│   ├── src/                  # Controllers, routes, services, middleware, schemas
+│   ├── prisma/               # PostgreSQL schema & database migrations
+│   └── package.json          # Backend scripts & dependencies
+│
+├── 📚 docs/                   # Centralized Setup & Technical Documentation
+│   ├── API.md                # REST API endpoint reference
+│   ├── AUTH_SETUP.md         # JWT & authentication architecture guide
+│   ├── DATABASE_SETUP.md     # PostgreSQL & Prisma setup guide
+│   └── OAUTH_SETUP.md        # Google, GitHub & LinkedIn OAuth setup
+│
+├── 🛠️ scripts/                # Helper & Asset Processing Scripts
+│   └── logo_generator/       # Python scripts for logo design candidates
+│
+├── 🎨 assets/                 # Raw Design Files & Logo Assets
+│   └── logo_candidates/      # SVG and PNG logo exports
+│
+├── package.json              # Monorepo Root workspace manager
+├── .env                      # Global environment variables
+└── README.md                 # Project Overview & Architecture Guide
+```
 
 ---
 
 ## ⚡ Quick Start
 
-### 1. Environment Setup
-Copy `.env.example` to `.env` in the root folder:
+### 1. Install Dependencies
+```bash
+# Install frontend & workspace dependencies
+npm install
+
+# Install backend dependencies
+cd backend && npm install && cd ..
+```
+
+### 2. Environment Setup
+Copy `.env.example` to `.env` in the project root:
 ```bash
 cp .env.example .env
 ```
 
-### 2. Frontend Development Server (Port 3000)
+### 3. Run Development Servers
+From the root directory:
 ```bash
-npm install
+# Run Next.js Frontend (Port 3000)
 npm run dev
-```
 
-### 3. Backend Express API Server (Port 5000)
-```bash
-cd backend
-npm install
-npm run prisma:generate
-npm run dev
+# Run Backend Express API (Port 5000)
+npm run dev:backend
 ```
-
-Check API Health: [http://localhost:5000/health](http://localhost:5000/health)
 
 ---
 
-## 📖 Setup & Configuration Guides
+## 📖 Setup & Technical Documentation
 
-Detailed step-by-step documentation for setup, database, OAuth, and API references:
+All setup guides are located in the [`docs/`](./docs) folder:
 
-- 🔒 **[AUTH_SETUP.md](./AUTH_SETUP.md)** - Complete Authentication setup guide.
-- 🗄️ **[DATABASE_SETUP.md](./DATABASE_SETUP.md)** - PostgreSQL and Prisma setup guide (macOS & Docker).
-- 🔑 **[OAUTH_SETUP.md](./OAUTH_SETUP.md)** - Step-by-step setup for Google, GitHub, and LinkedIn OAuth credentials.
-- 📑 **[API.md](./API.md)** - Complete REST API endpoint documentation.
+- 📑 **[API.md](./docs/API.md)** - Complete REST API endpoint documentation.
+- 🔒 **[AUTH_SETUP.md](./docs/AUTH_SETUP.md)** - Complete Authentication setup guide.
+- 🗄️ **[DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)** - PostgreSQL and Prisma setup guide.
+- 🔑 **[OAUTH_SETUP.md](./docs/OAUTH_SETUP.md)** - Step-by-step OAuth setup guide (Google, GitHub, LinkedIn).
 
 ---
 
-## 🧪 Running Backend Tests
-
-To run the backend test suite:
+## 🧪 Running Tests & Build Verification
 
 ```bash
-cd backend
-npm test
+# Verify Frontend TypeScript & Lint
+npm run lint
+
+# Build Frontend production app
+npm run build
+
+# Run Backend Jest Test Suite
+cd backend && npm test
 ```
