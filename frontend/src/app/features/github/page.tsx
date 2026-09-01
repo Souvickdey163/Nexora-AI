@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Evaluate public GitHub repository architecture quality, code cleanliness, README impact score, commit consistency, and security findings.",
 };
 
-export default function GithubPage() {
+export default function FeaturesGithubPage() {
   return (
     <FeatureLayout
       featureId="github-intelligence"

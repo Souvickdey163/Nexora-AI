@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Get 24/7 personalized career guidance, interview preparation advice, skill roadmap planning, and salary negotiation insights tailored to your target engineering roles.",
 };
 
-export default function MentorPage() {
+export default function FeaturesMentorPage() {
   return (
     <FeatureLayout
       featureId="career-mentor"

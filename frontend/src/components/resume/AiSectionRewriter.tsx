@@ -25,14 +25,14 @@ export function AiSectionRewriter({
   onClose,
   onAccept,
 }: AiSectionRewriterProps) {
-  if (!section) return null;
-
-  const [currentText, setCurrentText] = useState(section.sampleOriginalText);
-  const [improvedText, setImprovedText] = useState(section.sampleImprovedText);
+  const [currentText, setCurrentText] = useState(section?.sampleOriginalText || "");
+  const [improvedText, setImprovedText] = useState(section?.sampleImprovedText || "");
   const [tone, setTone] = useState<"Technical" | "Concise" | "Executive">("Technical");
   const [isCopied, setIsCopied] = useState(false);
   const [isAccepted, setIsAccepted] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+
+  if (!section) return null;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(improvedText);

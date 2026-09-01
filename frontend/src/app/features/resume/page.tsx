@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Upload your resume to calculate real-time ATS compatibility scores, detect missing skill keywords, rewrite bullet points with action metrics, and match against target job descriptions.",
 };
 
-export default function ResumePage() {
+export default function FeaturesResumePage() {
   return (
     <FeatureLayout
       featureId="resume-intelligence"

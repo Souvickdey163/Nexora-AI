@@ -19,9 +19,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const savedTheme = (localStorage.getItem("nexora-theme") as Theme) || "dark";
-    setThemeState(savedTheme);
+    if (savedTheme !== theme) {
+      setThemeState(savedTheme);
+    }
+    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       effectiveTheme = theme;
     }
 
-    setResolvedTheme(effectiveTheme);
+    setResolvedTheme((prev) => (prev !== effectiveTheme ? effectiveTheme : prev));
 
     if (effectiveTheme === "dark") {
       root.classList.add("dark");

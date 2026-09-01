@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Estimate target company compatibility, skill-gap analysis, and tier-1 recruitment readiness insights based on your current developer profile.",
 };
 
-export default function PlacementPage() {
+export default function FeaturesPlacementPage() {
   return (
     <FeatureLayout
       featureId="placement-intelligence"

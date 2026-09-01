@@ -32,7 +32,7 @@ export const FEATURES: FeatureItem[] = [
     description: "Analyze resumes, calculate ATS score, detect missing skills, and get instant rewrite suggestions.",
     longDescription: "Transform your resume with AI-driven ATS optimization. Compare your profile against target job descriptions, discover missing industry keywords, and format bullet points for maximum recruiter impact.",
     icon: FileText,
-    href: "/resume",
+    href: "/features/resume",
     benefits: [
       "Real-time ATS score calculation & gap analysis",
       "Action-verb & impact metric recommendations",
@@ -49,7 +49,7 @@ export const FEATURES: FeatureItem[] = [
     description: "Practice HR, technical, behavioral, and system-design interviews with real-time AI feedback.",
     longDescription: "Simulate high-stakes technical & behavioral interviews with an adaptive AI interviewer. Receive instant performance feedback on technical accuracy, clarity, confidence, and structure.",
     icon: Video,
-    href: "/interview",
+    href: "/features/interview",
     benefits: [
       "Role-specific interview simulations (Frontend, Backend, System Design, HR)",
       "Audio & transcript sentiment analysis",
@@ -66,7 +66,7 @@ export const FEATURES: FeatureItem[] = [
     description: "Solve curated coding challenges in a professional code editor with AI-powered reviews.",
     longDescription: "Master Data Structures & Algorithms with an integrated code editor. Get real-time hint generation, space-time complexity analysis, and automated test-case evaluation.",
     icon: Code2,
-    href: "/coding",
+    href: "/features/coding",
     benefits: [
       "Multi-language support (Python, TypeScript, C++, Java)",
       "Automated time & space complexity analysis",
@@ -82,7 +82,7 @@ export const FEATURES: FeatureItem[] = [
     description: "Get personalized 24/7 career guidance, learning recommendations, and study plans.",
     longDescription: "Your personal career strategist available 24/7. Ask questions about career paths, resume dilemmas, salary negotiations, or learning roadmaps tailored to your target roles.",
     icon: BrainCircuit,
-    href: "/mentor",
+    href: "/features/mentor",
     benefits: [
       "Customized study plans tailored to target job roles",
       "On-demand career advice & interview strategies",
@@ -98,7 +98,7 @@ export const FEATURES: FeatureItem[] = [
     description: "Analyze GitHub repos, architecture quality, documentation, and technical depth.",
     longDescription: "Elevate your open-source profile. Nexora evaluates your repository architecture, commit consistency, README quality, test coverage, and code structure for recruiter visibility.",
     icon: GithubIcon,
-    href: "/github",
+    href: "/features/github",
     benefits: [
       "Repository architecture & code quality evaluation",
       "README & documentation impact score",
@@ -115,7 +115,7 @@ export const FEATURES: FeatureItem[] = [
     description: "Track coding progress, interview scores, resume health, and overall career readiness.",
     longDescription: "Unify all your growth metrics in one unified dashboard. Track weekly coding velocity, mock interview improvement curves, and skill readiness indexes.",
     icon: BarChart3,
-    href: "/analytics",
+    href: "/features/analytics",
     benefits: [
       "Unified Career Readiness Index (0-100%)",
       "Skill proficiency breakdown (DSA, Web Dev, System Design)",
@@ -131,7 +131,7 @@ export const FEATURES: FeatureItem[] = [
     description: "Estimate company compatibility, skill-gap analysis, and tier-1 readiness insights.",
     longDescription: "Know where you stand before applying. Nexora matches your current skill matrix against tier-1 tech companies and startups to highlight exact gap areas.",
     icon: Building2,
-    href: "/placement",
+    href: "/features/placement",
     benefits: [
       "Target company compatibility scoring",
       "Critical skill-gap identification per job role",
@@ -147,7 +147,7 @@ export const FEATURES: FeatureItem[] = [
     description: "Generate customized daily, weekly, and monthly action plans for your dream role.",
     longDescription: "Stop guessing what to study next. Receive a dynamic, step-by-step career path that adapts to your learning pace, target timelines, and skill gaps.",
     icon: Compass,
-    href: "/roadmap",
+    href: "/features/roadmap",
     benefits: [
       "Adaptive daily & weekly milestone tracking",
       "Curated resource linking for every topic",
@@ -163,7 +163,7 @@ export const FEATURES: FeatureItem[] = [
     description: "Evaluate DSA, Core CS (OS, CN, DBMS, OOP), System Design, and Soft Skills.",
     longDescription: "Comprehensive diagnostic testing engine for computer science fundamentals. Test your knowledge under timed conditions with AI-generated explanations.",
     icon: Award,
-    href: "/roadmap",
+    href: "/features/assessment",
     benefits: [
       "Timed adaptive diagnostic tests",
       "Detailed topic-wise strength & weakness report",
@@ -179,7 +179,7 @@ export const FEATURES: FeatureItem[] = [
     description: "Discover curated learning resources, cheat sheets, and interview prep guides.",
     longDescription: "Access a handpicked repository of high-value learning material, system design cheat sheets, DSA patterns, and behavioral interview templates.",
     icon: BookOpen,
-    href: "/roadmap",
+    href: "/features/learning",
     benefits: [
       "Curated DSA pattern guides & top 100 questions",
       "System design architecture templates",

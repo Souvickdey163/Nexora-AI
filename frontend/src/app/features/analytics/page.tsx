@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Track your unified career readiness index, coding velocity, mock interview scoring curves, and skill proficiency heatmaps.",
 };
 
-export default function AnalyticsPage() {
+export default function FeaturesAnalyticsPage() {
   return (
     <FeatureLayout
       featureId="career-analytics"

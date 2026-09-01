@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Solve curated Data Structures & Algorithms coding challenges in an integrated multi-language code editor with automated time & space complexity AI reviews.",
 };
 
-export default function CodingPage() {
+export default function FeaturesCodingPage() {
   return (
     <FeatureLayout
       featureId="coding-arena"

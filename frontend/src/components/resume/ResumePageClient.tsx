@@ -196,7 +196,7 @@ export function ResumePageClient() {
   const [activeTab, setActiveTab] = useState<"overview" | "sections" | "skills" | "jd" | "action" | "history">("overview");
   const [activeRewriterSection, setActiveRewriterSection] = useState<SectionDetail | null>(null);
 
-  const handleStartAnalysis = (file: any, role: string) => {
+  const handleStartAnalysis = (file: { name: string; size: number; type: string; file?: File }, role: string) => {
     setIsAnalyzing(true);
     setProgress(15);
     setCurrentStep("Parsing PDF structure and extracting text...");
@@ -271,7 +271,7 @@ export function ResumePageClient() {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
                     className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
                       isActive
                         ? "bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-md border border-slate-200/80 dark:border-slate-700"

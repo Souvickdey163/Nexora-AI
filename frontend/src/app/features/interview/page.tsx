@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Practice HR, technical, behavioral, and system design interviews with real-time AI voice simulation, live transcript evaluation, and 5-dimension scoring rubric.",
 };
 
-export default function InterviewPage() {
+export default function FeaturesInterviewPage() {
   return (
     <FeatureLayout
       featureId="mock-interview"

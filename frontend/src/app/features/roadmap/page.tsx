@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Interactive step-by-step career path tailored to your target software engineering role, skill gaps, and learning pace.",
 };
 
-export default function RoadmapPage() {
+export default function FeaturesRoadmapPage() {
   return (
     <FeatureLayout
       featureId="career-roadmap"
