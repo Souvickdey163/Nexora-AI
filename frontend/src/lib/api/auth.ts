@@ -29,6 +29,7 @@ export const getStoredAccessToken = (): string | null => {
 export const setStoredAccessToken = (token: string): void => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('nexora_access_token', token);
+    window.dispatchEvent(new Event('nexora-auth-change'));
   }
 };
 
@@ -96,6 +97,9 @@ export const authApi = {
       if (typeof window !== 'undefined' && res.data.user) {
         localStorage.setItem('nexora_user', JSON.stringify(res.data.user));
       }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('nexora-auth-change'));
+      }
     }
     return res;
   },
@@ -110,6 +114,9 @@ export const authApi = {
       setStoredAccessToken(res.data.tokens.accessToken);
       if (typeof window !== 'undefined' && res.data.user) {
         localStorage.setItem('nexora_user', JSON.stringify(res.data.user));
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('nexora-auth-change'));
       }
     }
     return res;
@@ -151,6 +158,9 @@ export const authApi = {
   async logout() {
     await fetchApi('/logout', { method: 'POST' });
     clearStoredAuth();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('nexora-auth-change'));
+    }
   },
 
   // Get Current Authenticated User Profile

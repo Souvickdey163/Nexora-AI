@@ -18,15 +18,18 @@ import { FeaturesMegaMenu } from "./FeaturesMegaMenu";
 import { ThemeToggle } from "./ThemeToggle";
 import { MobileMenu } from "./MobileMenu";
 import { NexoraLogo } from "@/components/common/Logo";
+import { useAuth } from "@/context/AuthContext";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  // Post-login authentication state (Simulated/Stateful)
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  const { user, isLoggedIn, logout } = useAuth();
+
+  const displayName = user?.name || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
+  const initials = ((user?.firstName?.[0] || "") + (user?.lastName?.[0] || "")).toUpperCase() || "U";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -125,9 +128,9 @@ export function Navbar() {
                   className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white transition-all shadow-sm focus:outline-none"
                 >
                   <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                    SD
+                    {initials}
                   </div>
-                  <span className="text-xs font-bold tracking-tight">Souvick Dey</span>
+                  <span className="text-xs font-bold tracking-tight">{displayName}</span>
                   <ChevronDown
                     className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${
                       profileOpen ? "rotate-180 text-sky-500" : ""
@@ -142,15 +145,15 @@ export function Navbar() {
                     onMouseLeave={() => setProfileOpen(false)}
                   >
                     <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
-                      <p className="text-xs font-bold text-slate-900 dark:text-white">Souvick Dey</p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">souvick@nexora.ai</p>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">{displayName}</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{user?.email || ""}</p>
                       <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[9px] font-extrabold border border-sky-500/20">
-                        Pro Candidate
+                        Candidate Profile
                       </span>
                     </div>
 
                     <Link
-                      href="/dashboard"
+                      href="/"
                       onClick={() => setProfileOpen(false)}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
@@ -177,9 +180,9 @@ export function Navbar() {
                     </Link>
 
                     <button
-                      onClick={() => {
-                        setIsLoggedIn(false);
+                      onClick={async () => {
                         setProfileOpen(false);
+                        await logout();
                       }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors pt-2 border-t border-slate-100 dark:border-slate-800"
                     >

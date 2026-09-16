@@ -9,8 +9,11 @@ class EmailService {
     this.initTransporter();
   }
 
-  private initTransporter() {
-    if (env.SMTP_USER && env.SMTP_PASSWORD) {
+  private async initTransporter() {
+    const isConfigured = Boolean(env.SMTP_USER && env.SMTP_PASSWORD);
+    logger.info(`[SMTP DIAGNOSTIC] SMTP configured: ${isConfigured}`);
+
+    if (isConfigured) {
       this.transporter = nodemailer.createTransport({
         host: env.SMTP_HOST,
         port: env.SMTP_PORT,
@@ -21,6 +24,14 @@ class EmailService {
         },
       });
       logger.info('📧 Nodemailer SMTP transporter initialized.');
+
+      try {
+        await this.transporter.verify();
+        logger.info('[SMTP DIAGNOSTIC] SMTP connection: success');
+        logger.info('[SMTP DIAGNOSTIC] SMTP authentication: success');
+      } catch (err: any) {
+        logger.error(`[SMTP DIAGNOSTIC] SMTP connection/authentication failure: ${err.message || err}`);
+      }
     } else {
       logger.warn('⚠️ SMTP credentials missing in environment. Email service in simulation mode.');
     }
@@ -77,22 +88,31 @@ class EmailService {
     `;
 
     if (this.transporter) {
+      logger.info('[SMTP DIAGNOSTIC] sendMail called: yes');
       try {
-        await this.transporter.sendMail({
+        const info = await this.transporter.sendMail({
           from: env.SMTP_FROM,
           to: email,
           subject,
           html: htmlContent,
         });
-        logger.info(`📧 Real OTP Email successfully delivered to: ${email}`);
+
+        const isAccepted = Boolean(info.accepted && info.accepted.length > 0);
+        const hasMessageId = Boolean(info.messageId);
+
+        logger.info(`[SMTP DIAGNOSTIC] email accepted by SMTP server: ${isAccepted ? 'yes' : 'no'}`);
+        logger.info(`[SMTP DIAGNOSTIC] message ID returned: ${hasMessageId ? 'yes' : 'no'}`);
+        logger.info(`📧 Real OTP Email successfully delivered via SMTP server to recipient.`);
         return true;
       } catch (err: any) {
-        logger.error(`❌ Failed to send SMTP email to ${email}: ${err.message || err}`);
+        logger.error(`[SMTP DIAGNOSTIC] email accepted by SMTP server: no`);
+        logger.error(`[SMTP DIAGNOSTIC] message ID returned: no`);
+        logger.error(`❌ Failed to send SMTP email to recipient: ${err.message || err}`);
         return false;
       }
     } else {
-      // In development mode without active SMTP credentials, log simulated delivery
-      logger.info(`📧 [EMAIL SIMULATION MODE] OTP Code for ${email}: ${otpCode}`);
+      logger.info('[SMTP DIAGNOSTIC] sendMail called: no (Simulation Mode)');
+      logger.info(`📧 [EMAIL SIMULATION MODE] Real OTP email dispatch skipped because SMTP credentials are missing.`);
       return true;
     }
   }

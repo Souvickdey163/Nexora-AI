@@ -12,21 +12,14 @@ import {
   Zap,
 } from "lucide-react";
 
+import { useAuth } from "@/context/AuthContext";
+
 interface ChatMessage {
   id: string;
   sender: "user" | "ai";
   text: string;
   timestamp: string;
 }
-
-const INITIAL_MESSAGES: ChatMessage[] = [
-  {
-    id: "msg-1",
-    sender: "ai",
-    text: "Hi Souvick! I'm your Nexora AI Copilot 🤖. I can assist with resume optimization, mock interview prep, coding hints, or GitHub audit. How can I help you today?",
-    timestamp: "Just now",
-  },
-];
 
 const PROMPT_SUGGESTIONS = [
   "How to boost ATS score to 95+?",
@@ -37,7 +30,18 @@ const PROMPT_SUGGESTIONS = [
 
 export function FloatingAiAssistant() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
+  const { user } = useAuth();
+
+  const userGreeting = user?.firstName ? `Hi ${user.firstName}!` : "Hi there!";
+
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: "msg-1",
+      sender: "ai",
+      text: `${userGreeting} I'm your Nexora AI Copilot 🤖. I can assist with resume optimization, mock interview prep, coding hints, or GitHub audit. How can I help you today?`,
+      timestamp: "Just now",
+    },
+  ]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 

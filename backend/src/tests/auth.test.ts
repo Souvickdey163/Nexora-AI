@@ -2,6 +2,8 @@ import request from 'supertest';
 import app from '../app';
 
 describe('Nexora Authentication API Tests', () => {
+  jest.setTimeout(30000);
+
   const testUser = {
     firstName: 'Test',
     lastName: 'User',

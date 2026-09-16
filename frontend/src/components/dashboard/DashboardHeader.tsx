@@ -3,9 +3,14 @@
 import React from "react";
 import { Search, Sparkles, User, ChevronDown, Bell, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { useAuth } from "@/context/AuthContext";
 
 export function DashboardHeader() {
   const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
+
+  const displayName = user?.name || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Guest Candidate";
+  const initials = ((user?.firstName?.[0] || "") + (user?.lastName?.[0] || "")).toUpperCase() || "GC";
 
   return (
     <header className="h-16 bg-slate-900 text-slate-100 border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between gap-4 sticky top-0 z-20 shadow-md">
@@ -60,11 +65,11 @@ export function DashboardHeader() {
         {/* User Profile Pill */}
         <div className="flex items-center gap-2.5 pl-2 border-l border-slate-800 cursor-pointer">
           <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center font-bold text-xs">
-            SD
+            {initials}
           </div>
           <div className="hidden md:block text-left">
-            <div className="text-xs font-bold text-white leading-tight">Souvick Dey</div>
-            <div className="text-[10px] text-sky-400 font-medium">Pro Candidate</div>
+            <div className="text-xs font-bold text-white leading-tight">{displayName}</div>
+            <div className="text-[10px] text-sky-400 font-medium">{user?.role || "Candidate"}</div>
           </div>
           <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
         </div>

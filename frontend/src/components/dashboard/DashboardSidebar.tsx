@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { name: "Overview", href: "/dashboard", icon: Home },
+  { name: "Overview", href: "/", icon: Home },
   { name: "AI Resume Intelligence", href: "/resume", icon: FileText, badge: "ATS AI" },
   { name: "AI Mock Interviews", href: "/interview", icon: Video, badge: "Voice AI" },
   { name: "Coding Arena & DSA", href: "/coding", icon: Code2 },
@@ -53,7 +53,7 @@ export function DashboardSidebar() {
     >
       {/* Brand Header */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 shrink-0">
-        <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
+        <Link href="/" className="flex items-center gap-3 overflow-hidden">
           <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700/80 p-1 flex items-center justify-center shrink-0 shadow-sm">
             <Image
               src="/logo-nexora.png"

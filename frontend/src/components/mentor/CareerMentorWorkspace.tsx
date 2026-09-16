@@ -21,6 +21,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+import { useAuth } from "@/context/AuthContext";
+
 interface Message {
   id: string;
   sender: "user" | "mentor";
@@ -30,11 +32,16 @@ interface Message {
 }
 
 export function CareerMentorWorkspace() {
+  const { user } = useAuth();
+  const displayName = user?.name || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Candidate";
+  const initials = ((user?.firstName?.[0] || "") + (user?.lastName?.[0] || "")).toUpperCase() || "C";
+  const greetingName = user?.firstName || "Candidate";
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       sender: "mentor",
-      text: "Hello Souvick! I'm your Nexora AI Career Mentor. I've reviewed your current profile target for Senior Full Stack Engineer. How can I help guide your career progression today?",
+      text: `Hello ${greetingName}! I'm your Nexora AI Career Mentor. I've reviewed your current profile target for Senior Full Stack Engineer. How can I help guide your career progression today?`,
       timestamp: "10:30 AM",
       category: "Welcome",
     },
@@ -208,11 +215,11 @@ export function CareerMentorWorkspace() {
         <GlassCard className="space-y-4">
           <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm">
-              SD
+              {initials}
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">Souvick Dey</h4>
-              <p className="text-[11px] text-slate-500">Full Stack Engineer</p>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">{displayName}</h4>
+              <p className="text-[11px] text-slate-500">{user?.role || "Full Stack Engineer"}</p>
             </div>
           </div>
 

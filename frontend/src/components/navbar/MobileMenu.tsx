@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { FEATURES } from "@/data/features";
-import { ChevronDown, X, Sparkles, ArrowRight } from "lucide-react";
+import { ChevronDown, X, Sparkles, ArrowRight, LogOut, LayoutDashboard } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { NexoraLogo } from "@/components/common/Logo";
+import { useAuth } from "@/context/AuthContext";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -14,8 +15,12 @@ interface MobileMenuProps {
 
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const [featuresOpen, setFeaturesOpen] = useState(false);
+  const { user, isLoggedIn, logout } = useAuth();
 
   if (!isOpen) return null;
+
+  const displayName = user?.name || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
+  const initials = ((user?.firstName?.[0] || "") + (user?.lastName?.[0] || "")).toUpperCase() || "U";
 
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
@@ -123,14 +128,49 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
         {/* Bottom CTA */}
         <div className="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-3">
-          <Link
-            href="/auth"
-            onClick={onClose}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 hover:opacity-95 transition-opacity"
-          >
-            <span>Sign In / Sign Up</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {isLoggedIn ? (
+            <div className="space-y-3">
+              <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+                  {initials}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{displayName}</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
+                </div>
+              </div>
+
+              <Link
+                href="/"
+                onClick={onClose}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-xs transition-colors"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Go to Dashboard</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  onClose();
+                  await logout();
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-semibold text-xs hover:bg-rose-100 dark:hover:bg-rose-950/50 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/auth"
+              onClick={onClose}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 hover:opacity-95 transition-opacity"
+            >
+              <span>Sign In / Sign Up</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
         </div>
       </div>
     </div>

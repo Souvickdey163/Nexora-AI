@@ -11,7 +11,12 @@ export class OtpService {
   /**
    * Creates, hashes, stores, and emails an OTP code.
    */
-  async sendOtp(email: string, type: OtpType, userId?: string): Promise<{ success: boolean; message: string }> {
+  async sendOtp(
+    email: string,
+    type: OtpType,
+    userId?: string,
+    options: { ignoreCooldown?: boolean } = {}
+  ): Promise<{ success: boolean; message: string }> {
     const normalizedEmail = email.toLowerCase().trim();
 
     // Check rate limit/cooldown
@@ -20,7 +25,7 @@ export class OtpService {
       orderBy: { createdAt: 'desc' },
     });
 
-    if (lastOtp) {
+    if (lastOtp && !options.ignoreCooldown) {
       const timeSinceLastOtp = (Date.now() - lastOtp.createdAt.getTime()) / 1000;
       if (timeSinceLastOtp < OtpService.RESEND_COOLDOWN_SECONDS) {
         const secondsRemaining = Math.ceil(OtpService.RESEND_COOLDOWN_SECONDS - timeSinceLastOtp);
@@ -68,13 +73,20 @@ export class OtpService {
       where: {
         email: normalizedEmail,
         type,
-        verified: false,
       },
       orderBy: { createdAt: 'desc' },
     });
 
     if (!otpRecord) {
       throw new Error('No active OTP code found for this email.');
+    }
+
+    if (otpRecord.verified) {
+      // If already verified for password reset / registration in current window, check validity
+      if (otpRecord.expiresAt >= new Date() && verifyOtpHash(plainOtp, otpRecord.otpHash)) {
+        return true;
+      }
+      throw new Error('This OTP code has already been used or expired.');
     }
 
     if (otpRecord.expiresAt < new Date()) {

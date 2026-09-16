@@ -22,6 +22,9 @@ export const hashOtp = (otp: string): string => {
  */
 export const verifyOtpHash = (otp: string, storedHash: string): boolean => {
   const calculatedHash = hashOtp(otp);
+  if (!storedHash || calculatedHash.length !== storedHash.length) {
+    return false;
+  }
   return crypto.timingSafeEqual(
     Buffer.from(calculatedHash),
     Buffer.from(storedHash)

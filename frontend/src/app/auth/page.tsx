@@ -112,23 +112,45 @@ export default function AuthPage() {
     window.location.href = authApi.getOAuthRedirectUrl(providerKey);
   };
 
+  // Helper to extract detailed validation error messages from API response
+  const getErrorMessage = (res: any, fallback: string): string => {
+    if (res?.errors && typeof res.errors === "object") {
+      const messages: string[] = [];
+      Object.entries(res.errors).forEach(([_, errList]) => {
+        if (Array.isArray(errList)) {
+          messages.push(...errList);
+        } else if (typeof errList === "string") {
+          messages.push(errList);
+        }
+      });
+      if (messages.length > 0) {
+        return messages.join(". ");
+      }
+    }
+    if (res?.error && res.error !== "Validation failed") {
+      return res.error;
+    }
+    return fallback;
+  };
+
   // Real Form Submission Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setNotification(null);
 
     if (mode === "login") {
-      if (!email || !password) {
+      const trimmedEmail = email.trim();
+      if (!trimmedEmail || !password) {
         setNotification({ type: "error", message: "Please enter your email and password." });
         return;
       }
       setLoading(true);
-      const res = await authApi.login({ email, password });
+      const res = await authApi.login({ email: trimmedEmail, password });
       setLoading(false);
 
       if (res.success) {
         setNotification({ type: "success", message: res.message || "Sign in successful! Redirecting..." });
-        setTimeout(() => router.push("/dashboard"), 800);
+        setTimeout(() => router.push("/"), 800);
       } else {
         if (res.code === "EMAIL_UNVERIFIED") {
           setNotification({ type: "info", message: res.error || "Email unverified. Verification OTP code sent." });
@@ -136,22 +158,77 @@ export default function AuthPage() {
           setResendTimer(60);
           setCanResend(false);
         } else {
-          setNotification({ type: "error", message: res.error || "Sign in failed. Invalid credentials." });
+          setNotification({ type: "error", message: getErrorMessage(res, "Sign in failed. Invalid credentials.") });
         }
       }
     }
 
     if (mode === "signup") {
-      if (!firstName || !lastName || !email || !password) {
-        setNotification({ type: "error", message: "Please fill in all required fields." });
+      const trimmedFirstName = firstName.trim();
+      const trimmedLastName = lastName.trim();
+      const trimmedEmail = email.trim();
+
+      if (!trimmedFirstName) {
+        setNotification({ type: "error", message: "First name is required." });
         return;
       }
+      if (trimmedFirstName.length > 50) {
+        setNotification({ type: "error", message: "First name cannot exceed 50 characters." });
+        return;
+      }
+
+      if (!trimmedLastName) {
+        setNotification({ type: "error", message: "Last name is required." });
+        return;
+      }
+      if (trimmedLastName.length > 50) {
+        setNotification({ type: "error", message: "Last name cannot exceed 50 characters." });
+        return;
+      }
+
+      if (!trimmedEmail) {
+        setNotification({ type: "error", message: "Email address is required." });
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        setNotification({ type: "error", message: "Please enter a valid email address." });
+        return;
+      }
+
+      if (!password) {
+        setNotification({ type: "error", message: "Password is required." });
+        return;
+      }
+      if (password.length < 8) {
+        setNotification({ type: "error", message: "Password must be at least 8 characters long." });
+        return;
+      }
+      if (!/[A-Z]/.test(password)) {
+        setNotification({ type: "error", message: "Password must contain at least one uppercase letter." });
+        return;
+      }
+      if (!/[a-z]/.test(password)) {
+        setNotification({ type: "error", message: "Password must contain at least one lowercase letter." });
+        return;
+      }
+      if (!/[0-9]/.test(password)) {
+        setNotification({ type: "error", message: "Password must contain at least one number." });
+        return;
+      }
+
       if (!agreeTerms) {
         setNotification({ type: "error", message: "Please accept the Terms of Service & Privacy Policy." });
         return;
       }
+
       setLoading(true);
-      const res = await authApi.register({ firstName, lastName, email, password });
+      const res = await authApi.register({
+        firstName: trimmedFirstName,
+        lastName: trimmedLastName,
+        email: trimmedEmail,
+        password,
+      });
       setLoading(false);
 
       if (res.success) {
@@ -160,10 +237,10 @@ export default function AuthPage() {
         setCanResend(false);
         setNotification({
           type: "info",
-          message: res.message || `Verification OTP sent! Check your inbox at ${email}.`,
+          message: res.message || `Verification OTP sent! Check your inbox at ${trimmedEmail}.`,
         });
       } else {
-        setNotification({ type: "error", message: res.error || "Registration failed." });
+        setNotification({ type: "error", message: getErrorMessage(res, "Registration failed.") });
       }
     }
 
@@ -179,9 +256,9 @@ export default function AuthPage() {
 
       if (res.success) {
         setNotification({ type: "success", message: res.message || "Email verified successfully! Welcome to Nexora AI." });
-        setTimeout(() => router.push("/dashboard"), 1000);
+        setTimeout(() => router.push("/"), 1000);
       } else {
-        setNotification({ type: "error", message: res.error || "Invalid or expired OTP code." });
+        setNotification({ type: "error", message: getErrorMessage(res, "Invalid or expired OTP code.") });
       }
     }
 
@@ -203,7 +280,7 @@ export default function AuthPage() {
           message: res.message || `Password reset OTP code sent to ${email}.`,
         });
       } else {
-        setNotification({ type: "error", message: res.error || "Failed to request password reset." });
+        setNotification({ type: "error", message: getErrorMessage(res, "Failed to request password reset.") });
       }
     }
 
@@ -230,7 +307,7 @@ export default function AuthPage() {
           setOtp(["", "", "", "", "", ""]);
         }, 1200);
       } else {
-        setNotification({ type: "error", message: res.error || "Failed to reset password." });
+        setNotification({ type: "error", message: getErrorMessage(res, "Failed to reset password.") });
       }
     }
   };
@@ -501,6 +578,74 @@ export default function AuthPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {mode === "signup" && (
+                <div className="mt-2.5 p-3 rounded-xl bg-slate-100/70 dark:bg-slate-950/70 border border-slate-200/80 dark:border-slate-800/80 space-y-1.5 transition-all">
+                  <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                    Password Requirements:
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
+                    <div
+                      className={`flex items-center gap-1.5 transition-colors ${
+                        password.length >= 8
+                          ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+                          : "text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {password.length >= 8 ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      ) : (
+                        <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-700 shrink-0" />
+                      )}
+                      <span>At least 8 characters</span>
+                    </div>
+
+                    <div
+                      className={`flex items-center gap-1.5 transition-colors ${
+                        /[A-Z]/.test(password)
+                          ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+                          : "text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {/[A-Z]/.test(password) ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      ) : (
+                        <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-700 shrink-0" />
+                      )}
+                      <span>At least 1 uppercase letter</span>
+                    </div>
+
+                    <div
+                      className={`flex items-center gap-1.5 transition-colors ${
+                        /[a-z]/.test(password)
+                          ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+                          : "text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {/[a-z]/.test(password) ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      ) : (
+                        <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-700 shrink-0" />
+                      )}
+                      <span>At least 1 lowercase letter</span>
+                    </div>
+
+                    <div
+                      className={`flex items-center gap-1.5 transition-colors ${
+                        /[0-9]/.test(password)
+                          ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+                          : "text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {/[0-9]/.test(password) ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      ) : (
+                        <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-700 shrink-0" />
+                      )}
+                      <span>At least 1 number</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

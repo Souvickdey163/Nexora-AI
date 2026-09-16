@@ -54,7 +54,7 @@ export class AuthService {
             passwordHash,
           },
         });
-        await otpService.sendOtp(normalizedEmail, OtpType.REGISTRATION, existingUser.id);
+        await otpService.sendOtp(normalizedEmail, OtpType.REGISTRATION, existingUser.id, { ignoreCooldown: true });
         return {
           user: this.formatUser(existingUser),
           message: 'Account updated. Verification OTP code has been sent to your email.',
@@ -171,7 +171,7 @@ export class AuthService {
     // Check email verification status
     if (!user.emailVerified || user.status === UserStatus.UNVERIFIED) {
       // Trigger new OTP and instruct user to verify
-      await otpService.sendOtp(normalizedEmail, OtpType.REGISTRATION, user.id);
+      await otpService.sendOtp(normalizedEmail, OtpType.REGISTRATION, user.id, { ignoreCooldown: true });
       const error: any = new Error('Your email address is not verified yet. A new verification OTP code has been sent to your inbox.');
       error.code = 'EMAIL_UNVERIFIED';
       throw error;

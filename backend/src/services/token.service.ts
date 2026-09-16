@@ -10,9 +10,11 @@ class TokenService {
    * Signs a JWT access token for a given user.
    */
   generateAccessToken(payload: { userId: string; email: string; status: UserStatus }): string {
-    return jwt.sign(payload, env.JWT_SECRET, {
-      expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
-    });
+    return jwt.sign(
+      { ...payload, jti: crypto.randomUUID() },
+      env.JWT_SECRET,
+      { expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
+    );
   }
 
   /**

@@ -27,7 +27,7 @@ export function FinalCTA() {
 
           <div className="pt-4">
             <Link
-              href="/dashboard"
+              href="/"
               className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-white text-slate-900 font-bold text-base shadow-xl hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400"
             >
               <span>Start Your Career Journey</span>

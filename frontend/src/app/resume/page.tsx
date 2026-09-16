@@ -16,6 +16,7 @@ export default function ResumePage() {
       subtitle="Turn Your Resume Into a Career Advantage with real-time ATS scoring, keyword extraction, and AI bullet rewriter."
       category="Resume & ATS Optimization"
       badge="Popular"
+      hideHeaderNav={true}
     >
       <ResumePageClient />
     </FeatureLayout>

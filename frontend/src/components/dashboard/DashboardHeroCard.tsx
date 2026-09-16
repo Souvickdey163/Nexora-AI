@@ -14,7 +14,10 @@ import {
   Users,
 } from "lucide-react";
 
+import { useAuth } from "@/context/AuthContext";
+
 export function DashboardHeroCard() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"materials" | "jobs" | "networking" | "interviews">("materials");
   const [activeStep, setActiveStep] = useState(0);
 
@@ -59,7 +62,7 @@ export function DashboardHeroCard() {
       {/* Greeting Header */}
       <div className="text-center space-y-1">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          Hi, Souvick 👋
+          Hi, {user?.firstName || "Candidate"} 👋
         </h2>
         <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-medium">
           Here&apos;s an impactful action plan for your dream job hunt

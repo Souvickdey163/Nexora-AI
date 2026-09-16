@@ -64,11 +64,11 @@ export function FeaturesMegaMenu({ onClose }: FeaturesMegaMenuProps) {
       <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 -mx-6 -mb-6 p-4 rounded-b-2xl">
         <span>Ready to explore all tools in one unified dashboard?</span>
         <Link
-          href="/dashboard"
+          href="/"
           onClick={onClose}
           className="font-medium text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1"
         >
-          Open App Dashboard &rarr;
+          Open App Home &rarr;
         </Link>
       </div>
     </div>

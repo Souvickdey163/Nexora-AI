@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { AuthProvider } from "@/context/AuthContext";
 import { FloatingAiAssistant } from "@/components/dashboard/FloatingAiAssistant";
 
 const geistSans = Geist({
@@ -46,8 +47,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
         <ThemeProvider>
-          {children}
-          <FloatingAiAssistant />
+          <AuthProvider>
+            {children}
+            <FloatingAiAssistant />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

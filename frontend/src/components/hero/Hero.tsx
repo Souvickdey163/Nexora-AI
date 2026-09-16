@@ -55,7 +55,7 @@ export function Hero() {
             {/* Action CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-1">
               <Link
-                href="/dashboard"
+                href="/"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-base shadow-lg shadow-sky-500/10 hover:bg-slate-800 dark:hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
               >
                 <span>Start Your Career Journey</span>

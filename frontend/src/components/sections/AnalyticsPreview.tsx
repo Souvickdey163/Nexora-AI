@@ -42,7 +42,7 @@ export function AnalyticsPreview() {
                 <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
               </div>
               <span className="text-xs font-mono font-medium text-slate-500 dark:text-slate-400 ml-2">
-                nexora.ai/dashboard/analytics
+                nexora.ai/analytics
               </span>
             </div>
 

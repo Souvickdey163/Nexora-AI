@@ -10,7 +10,7 @@ interface ResumeHeroProps {
 
 export function ResumeHero({ onUploadClick, onSampleClick }: ResumeHeroProps) {
   return (
-    <section className="relative pt-24 pb-12 md:pt-32 md:pb-16 overflow-hidden">
+    <section className="relative pt-1 pb-10 md:pt-2 md:pb-14 overflow-hidden">
       {/* Background Ambient Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[350px] bg-gradient-to-tr from-sky-500/15 via-indigo-500/10 to-cyan-400/10 blur-[130px] rounded-full pointer-events-none -z-10" />
 

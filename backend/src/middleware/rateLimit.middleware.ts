@@ -1,9 +1,11 @@
 import rateLimit from 'express-rate-limit';
 
+const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined;
+
 // General Auth API rate limiter (max 30 requests per 15 mins)
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
+  max: isTestEnv ? 1000 : 30,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -15,7 +17,7 @@ export const authLimiter = rateLimit({
 // Strict Rate Limiter for OTP sending/verifying (max 5 requests per 10 mins)
 export const otpLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
-  max: 5,
+  max: isTestEnv ? 1000 : 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -27,7 +29,7 @@ export const otpLimiter = rateLimit({
 // Strict Rate Limiter for Login (max 10 failed login attempts per 15 mins)
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: isTestEnv ? 1000 : 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
