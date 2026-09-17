@@ -46,8 +46,103 @@ model User {
   sessions      Session[]
   profile       UserProfile?
   otpRecords    OtpVerification[]
+  resumes       Resume[]
+  mentorConversations MentorConversation[]
+  codingSubmissions   CodingSubmission[]
+  codingProgress      CodingProgress[]
 
   @@index([email])
+}
+
+
+enum ParsingStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum AnalysisStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Resume {
+  id               String          @id @default(uuid())
+  userId           String
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title            String          @default("My Resume")
+  currentVersionId String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  versions         ResumeVersion[]
+
+  @@index([userId])
+}
+
+model ResumeVersion {
+  id               String           @id @default(uuid())
+  resumeId         String
+  resume           Resume           @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  versionNumber    Int
+  originalFileName String
+  storageKey       String
+  mimeType         String           @default("application/pdf")
+  fileSize         Int
+  extractedText    String?          @db.Text
+  extractedData    Json?            // Parsed JSON (personal, skills, education, experience, etc.)
+  parsingStatus    ParsingStatus    @default(PENDING)
+  parsingError     String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  analyses         ResumeAnalysis[]
+
+  @@unique([resumeId, versionNumber])
+  @@index([resumeId])
+}
+
+model ResumeAnalysis {
+  id               String         @id @default(uuid())
+  resumeVersionId  String
+  resumeVersion    ResumeVersion  @relation(fields: [resumeVersionId], references: [id], onDelete: Cascade)
+  
+  targetRole       String?
+  targetCompany    String?
+  jobDescription   String?        @db.Text
+
+  overallScore     Int            @default(0)
+  atsScore         Int            @default(0)
+  contentScore     Int            @default(0)
+  skillsScore      Int            @default(0)
+  experienceScore  Int            @default(0)
+  educationScore   Int            @default(0)
+  projectsScore    Int            @default(0)
+  formattingScore  Int            @default(0)
+  keywordScore     Int            @default(0)
+  summaryScore     Int            @default(0)
+
+  strengths        String[]       @default([])
+  weaknesses       String[]       @default([])
+  missingKeywords  String[]       @default([])
+  missingSkills    String[]       @default([])
+  recommendations  String[]       @default([])
+  suggestedChanges Json?          // List of { section, current, suggested, reason }
+
+  extractedData    Json?          // Snapshot of extracted resume data at analysis time
+  aiProvider       String         @default("gemini")
+  aiModel          String         @default("gemini-1.5-flash")
+  analysisStatus   AnalysisStatus @default(PENDING)
+  errorMessage     String?
+  
+  createdAt        DateTime       @default(now())
+  completedAt      DateTime?
+
+  @@index([resumeVersionId])
+  @@index([createdAt])
+  @@index([targetRole])
 }
 
 model OAuthAccount {
@@ -114,3 +209,140 @@ model UserProfile {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+enum MentorRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+model MentorConversation {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String   @default("New Conversation")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages  MentorMessage[]
+
+  @@index([userId])
+  @@index([updatedAt])
+}
+
+model MentorMessage {
+  id             String             @id @default(uuid())
+  conversationId String
+  conversation   MentorConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           MentorRole
+  content        String             @db.Text
+  createdAt      DateTime           @default(now())
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+// ===================================================
+// CODING ARENA MODELS
+// ===================================================
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum SubmissionStatus {
+  ACCEPTED
+  WRONG_ANSWER
+  COMPILATION_ERROR
+  RUNTIME_ERROR
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+}
+
+model CodingProblem {
+  id                 String             @id @default(uuid())
+  slug               String             @unique
+  title              String
+  description        String             @db.Text
+  source             String             @default("Nexora Original")
+  license            String             @default("MIT")
+  difficulty         Difficulty         @default(EASY)
+  topic              String             // Arrays, Strings, Linked List, Stack, Queue, Binary Tree, BST, Heap, Hashing, Graphs, Recursion, Backtracking, Dynamic Programming, Greedy, Sorting, Searching
+  tags               String[]           @default([])
+  examples           Json               // Array of { input, output, explanation }
+  constraints        String[]           @default([])
+  supportedLanguages String[]           @default(["java", "cpp", "python", "javascript", "typescript"])
+  starterCode        Json               // Map of language -> starter code string e.g. { "python": "...", "cpp": "..." }
+  timeLimitMs        Int                @default(2000)
+  memoryLimitMb      Int                @default(256)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  testCases          CodingTestCase[]
+  submissions        CodingSubmission[]
+  progress           CodingProgress[]
+
+  @@index([topic])
+  @@index([difficulty])
+  @@index([slug])
+}
+
+model CodingTestCase {
+  id             String        @id @default(uuid())
+  problemId      String
+  problem        CodingProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  input          String        @db.Text
+  expectedOutput String        @db.Text
+  isHidden       Boolean       @default(false)
+  explanation    String?       @db.Text
+  order          Int           @default(0)
+
+  @@index([problemId])
+  @@index([isHidden])
+}
+
+model CodingSubmission {
+  id            String           @id @default(uuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemId     String
+  problem       CodingProblem    @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  language      String
+  code          String           @db.Text
+  status        SubmissionStatus @default(ACCEPTED)
+  testsPassed   Int              @default(0)
+  totalTests    Int              @default(0)
+  runtimeMs     Int?
+  memoryKb      Int?
+  stdout        String?          @db.Text
+  stderr        String?          @db.Text
+  compileOutput String?          @db.Text
+  createdAt     DateTime         @default(now())
+
+  @@index([userId])
+  @@index([problemId])
+  @@index([userId, problemId])
+  @@index([createdAt])
+}
+
+model CodingProgress {
+  id              String        @id @default(uuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemId       String
+  problem         CodingProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  isSolved        Boolean       @default(false)
+  isAttempted     Boolean       @default(true)
+  attemptsCount   Int           @default(1)
+  lastSubmittedAt DateTime      @default(now())
+  solvedAt        DateTime?
+
+  @@unique([userId, problemId])
+  @@index([userId])
+  @@index([problemId])
+  @@index([isSolved])
+}
+
+

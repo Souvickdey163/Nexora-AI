@@ -5,9 +5,10 @@ import { env } from '../config/env';
 import { hashOtp } from '../utils/otp';
 import bcrypt from 'bcryptjs';
 
-describe('Comprehensive End-to-End Authentication & Database Verification', () => {
-  jest.setTimeout(30000);
+// Set long timeout for database operations & email network requests
+jest.setTimeout(30000);
 
+describe('Comprehensive End-to-End Authentication & Database Verification', () => {
   const e2eUser = {
     firstName: 'Souvick',
     lastName: 'Dey',
@@ -74,9 +75,9 @@ describe('Comprehensive End-to-End Authentication & Database Verification', () =
       where: { email: e2eUser.email.toLowerCase() },
     });
     expect(dbUser).not.toBeNull();
-    expect(dbUser?.emailVerified).toBe(false);
-    expect(dbUser?.status).toBe('UNVERIFIED');
-    expect(dbUser?.passwordHash).not.toBe(e2eUser.password);
+    expect(dbUser!.emailVerified).toBe(false);
+    expect(dbUser!.status).toBe('UNVERIFIED');
+    expect(dbUser!.passwordHash).not.toBe(e2eUser.password);
 
     // Verify bcrypt hash validity
     const isPasswordValid = await bcrypt.compare(e2eUser.password, dbUser!.passwordHash!);
@@ -88,9 +89,9 @@ describe('Comprehensive End-to-End Authentication & Database Verification', () =
       orderBy: { createdAt: 'desc' },
     });
     expect(dbOtp).not.toBeNull();
-    expect(dbOtp?.verified).toBe(false);
-    expect(dbOtp?.otpHash).not.toHaveLength(6); // Must be SHA-256 hash
-    expect(dbOtp?.expiresAt.getTime()).toBeGreaterThan(Date.now());
+    expect(dbOtp!.verified).toBe(false);
+    expect(dbOtp!.otpHash).not.toHaveLength(6); // Must be SHA-256 hash
+    expect(dbOtp!.expiresAt.getTime()).toBeGreaterThan(Date.now());
   });
 
   // 4. Duplicate Registration
@@ -123,7 +124,8 @@ describe('Comprehensive End-to-End Authentication & Database Verification', () =
       where: { email: e2eUser.email.toLowerCase(), type: 'REGISTRATION' },
       orderBy: { createdAt: 'desc' },
     });
-    expect(dbOtp?.attempts).toBeGreaterThan(0);
+    expect(dbOtp).not.toBeNull();
+    expect(dbOtp!.attempts).toBeGreaterThan(0);
   });
 
   // 7. Login Unverified User
@@ -171,8 +173,9 @@ describe('Comprehensive End-to-End Authentication & Database Verification', () =
     const dbUser = await prisma.user.findUnique({
       where: { email: e2eUser.email.toLowerCase() },
     });
-    expect(dbUser?.emailVerified).toBe(true);
-    expect(dbUser?.status).toBe('ACTIVE');
+    expect(dbUser).not.toBeNull();
+    expect(dbUser!.emailVerified).toBe(true);
+    expect(dbUser!.status).toBe('ACTIVE');
   });
 
   // 9. Login Verified User

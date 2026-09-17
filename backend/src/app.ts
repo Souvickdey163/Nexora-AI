@@ -5,6 +5,9 @@ import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { prisma } from './config/database';
 import authRoutes from './routes/auth.routes';
+import resumeRoutes from './routes/resume.routes';
+import mentorRoutes from './routes/mentor.routes';
+import codingRoutes from './routes/coding.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -48,9 +51,18 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Mount API routes (Both /api/auth and /api/v1/auth for flexible frontend calls)
+// Mount API routes (Both /api/... and /api/v1/... for flexible frontend calls)
 app.use('/api/auth', authRoutes);
 app.use('/api/v1/auth', authRoutes);
+
+app.use('/api/resumes', resumeRoutes);
+app.use('/api/v1/resumes', resumeRoutes);
+
+app.use('/api/mentor', mentorRoutes);
+app.use('/api/v1/mentor', mentorRoutes);
+
+app.use('/api/coding', codingRoutes);
+app.use('/api/v1/coding', codingRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

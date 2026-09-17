@@ -39,6 +39,18 @@ const envSchema = z.object({
   LINKEDIN_CLIENT_ID: z.string().optional().default(''),
   LINKEDIN_CLIENT_SECRET: z.string().optional().default(''),
   LINKEDIN_CALLBACK_URL: z.string().optional().default('http://localhost:5001/api/auth/linkedin/callback'),
+
+  // AI Resume Intelligence Config
+  RESUME_UPLOAD_DIR: z.string().default('./uploads/resumes'),
+  RESUME_MAX_FILE_SIZE_MB: z.string().transform((val) => parseInt(val, 10)).default('10'),
+  AI_SERVICE_URL: z.string().default('http://localhost:8000'),
+  RESUME_ANALYSIS_RATE_LIMIT: z.string().transform((val) => parseInt(val, 10)).default('10'),
+
+  // AI Career Mentor Free-Tier Protection Limits
+  MENTOR_MAX_MESSAGE_LENGTH: z.string().transform((val) => parseInt(val, 10)).default('4000'),
+  MENTOR_MAX_CONTEXT_MESSAGES: z.string().transform((val) => parseInt(val, 10)).default('20'),
+  MENTOR_DAILY_MESSAGE_LIMIT: z.string().transform((val) => parseInt(val, 10)).default('20'),
+  MENTOR_RATE_LIMIT_PER_MINUTE: z.string().transform((val) => parseInt(val, 10)).default('10'),
 });
 
 const parseEnv = () => {
