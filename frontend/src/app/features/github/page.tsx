@@ -1,23 +1,23 @@
 import { Metadata } from "next";
 import { FeatureLayout } from "@/components/layout/FeatureLayout";
-import { GithubIntelligenceWorkspace } from "@/components/github/GithubIntelligenceWorkspace";
+import { GitHubWorkspace } from "@/components/github/GitHubWorkspace";
 
 export const metadata: Metadata = {
-  title: "GitHub Repository Intelligence & Architecture Analyzer | Nexora AI",
+  title: "GitHub Intelligence & Repository Analytics | Nexora AI",
   description:
-    "Evaluate public GitHub repository architecture quality, code cleanliness, README impact score, commit consistency, and security findings.",
+    "Analyze real-world GitHub code repositories, technical skills evidence, engineering practice signals, ATS resume alignment, and project-specific interview questions.",
 };
 
-export default function FeaturesGithubPage() {
+export default function FeaturesGitHubPage() {
   return (
     <FeatureLayout
       featureId="github-intelligence"
       title="GitHub Intelligence"
-      subtitle="Evaluate GitHub repository architecture, code quality, test coverage, and recruiter portfolio visibility."
-      category="Project Portfolio"
-      badge="New"
+      subtitle="Analyze your real-world development projects, technical skills evidence, engineering practice signals, and code quality."
+      category="Developer Intelligence"
+      badge="Real GitHub API"
     >
-      <GithubIntelligenceWorkspace />
+      <GitHubWorkspace />
     </FeatureLayout>
   );
 }

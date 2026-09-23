@@ -50,9 +50,166 @@ model User {
   mentorConversations MentorConversation[]
   codingSubmissions   CodingSubmission[]
   codingProgress      CodingProgress[]
+  interviews          Interview[]
+  interviewRecordings InterviewRecording[]
+  githubAccount       GitHubAccount?
+  githubAnalyses      GitHubRepositoryAnalysis[]
+  githubSkillEvidences GitHubSkillEvidence[]
 
   @@index([email])
 }
+
+// ===================================================
+// AI INTERVIEW STUDIO MODELS (MOCK TEST & LIVE INTERVIEW)
+// ===================================================
+
+enum InterviewMode {
+  MOCK_TEST
+  LIVE_INTERVIEW
+}
+
+enum InterviewType {
+  HR_BEHAVIORAL
+  TECHNICAL
+  SYSTEM_DESIGN
+  MIXED
+  RESUME_BASED
+}
+
+enum InterviewStatus {
+  CREATED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  TERMINATED_INTEGRITY
+}
+
+model Interview {
+  id              String          @id @default(uuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode            InterviewMode   @default(MOCK_TEST)
+  type            InterviewType   @default(TECHNICAL)
+  targetRole      String          @default("Software Engineer")
+  difficulty      Difficulty      @default(MEDIUM)
+  durationMinutes Int             @default(30)
+  status          InterviewStatus @default(CREATED)
+
+  resumeVersionId String?
+  jobDescription  String?         @db.Text
+
+  overallScore          Int?
+  communicationScore    Int?
+  technicalScore        Int?
+  structureScore        Int?
+  speechClarityScore    Int?
+  roleRelevanceScore    Int?
+
+  createdAt       DateTime        @default(now())
+  completedAt     DateTime?
+
+  questions       InterviewQuestion[]
+  report          InterviewReport?
+  recording       InterviewRecording?
+  events          InterviewEvent[]
+
+  @@index([userId])
+  @@index([mode])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model InterviewQuestion {
+  id                    String            @id @default(uuid())
+  interviewId           String
+  interview             Interview         @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  questionIndex         Int
+  category              String            // Technical, Behavioral, System Design, STAR
+  questionText          String            @db.Text
+  hints                 String?           @db.Text
+  expectedKeyPoints     String[]          @default([])
+  timestampStartSeconds Int               @default(0)
+
+  answers               InterviewAnswer[]
+
+  @@index([interviewId])
+}
+
+model InterviewAnswer {
+  id                   String            @id @default(uuid())
+  questionId           String
+  question             InterviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userText             String?           @db.Text
+  transcriptText       String?           @db.Text
+  audioDurationSeconds Int?              @default(0)
+  wpm                  Int?              @default(0)
+  fillerWordsCount     Int?              @default(0)
+  fillerWordsDetail    Json?             // { "um": 3, "like": 2 }
+  languageDistribution Json?             // { "english": 80, "hindi": 20 }
+  evaluationScore      Int?
+  evaluationFeedback   Json?             // { strengths: [], improvements: [], starAnalysis: {} }
+  createdAt            DateTime          @default(now())
+
+  @@index([questionId])
+}
+
+model InterviewReport {
+  id                     String      @id @default(uuid())
+  interviewId            String      @unique
+  interview              Interview   @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  overallScore           Int         @default(0)
+  communicationScore     Int         @default(0)
+  technicalScore         Int         @default(0)
+  structureScore         Int         @default(0)
+  speechClarityScore     Int         @default(0)
+  roleRelevanceScore     Int         @default(0)
+
+  observablePresentation Json?       // { faceVisibilityPct, cameraOrientation, gazeShifts, posture, movement }
+  speechMetrics          Json?       // { avgWpm, fillerWordsTotal, avgPauseSec, avgAnswerDurationSec }
+  languageDistribution   Json?       // { englishPct, hindiPct, mixedPct, feedback }
+
+  strengths              String[]    @default([])
+  improvements           String[]    @default([])
+  actionableRecommendations Json?   // [{ problem, recommendation }]
+  questionEvaluations    Json?       // Detailed question breakdown array
+
+  createdAt              DateTime    @default(now())
+
+  @@index([interviewId])
+}
+
+model InterviewRecording {
+  id              String      @id @default(uuid())
+  interviewId     String      @unique
+  interview       Interview   @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  storageKey      String
+  mimeType        String      @default("video/webm")
+  durationSeconds Int         @default(0)
+  fileSizeBytes   Int         @default(0)
+  status          String      @default("SAVED") // SAVED | DELETED
+
+  createdAt       DateTime    @default(now())
+
+  @@index([userId])
+  @@index([interviewId])
+}
+
+model InterviewEvent {
+  id          String    @id @default(uuid())
+  interviewId String
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  eventType   String    // FOCUS_LOST | FULLSCREEN_EXIT | WARNING_ISSUED | SESSION_TERMINATED
+  message     String
+  timestamp   DateTime  @default(now())
+
+  @@index([interviewId])
+}
+
 
 
 enum ParsingStatus {
@@ -344,5 +501,109 @@ model CodingProgress {
   @@index([problemId])
   @@index([isSolved])
 }
+
+// ===================================================
+// GITHUB INTELLIGENCE MODELS
+// ===================================================
+
+model GitHubAccount {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  githubUserId  String
+  username      String
+  name          String?
+  avatarUrl     String?
+  profileUrl    String?
+  bio           String?
+  publicRepos   Int      @default(0)
+  followers     Int      @default(0)
+  following     Int      @default(0)
+  accessToken   String?  // Secured server-side token if connected via OAuth/PAT
+  lastSyncedAt  DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  repositories   GitHubRepository[]
+  skillEvidences GitHubSkillEvidence[]
+
+  @@index([username])
+}
+
+model GitHubRepository {
+  id              String   @id @default(uuid())
+  githubAccountId String
+  githubAccount   GitHubAccount @relation(fields: [githubAccountId], references: [id], onDelete: Cascade)
+  userId          String
+  githubRepoId    String
+  owner           String
+  name            String
+  fullName        String
+  description     String?  @db.Text
+  url             String
+  primaryLanguage String?
+  languages       Json?    // Language byte mapping { "TypeScript": 10240, "CSS": 3400 }
+  stars           Int      @default(0)
+  forks           Int      @default(0)
+  isPrivate       Boolean  @default(false)
+  defaultBranch   String   @default("main")
+  pushedAt        DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  analyses        GitHubRepositoryAnalysis[]
+  skillEvidences  GitHubSkillEvidence[]
+
+  @@unique([githubAccountId, githubRepoId])
+  @@index([userId])
+  @@index([owner, name])
+}
+
+model GitHubRepositoryAnalysis {
+  id                 String   @id @default(uuid())
+  repositoryId       String
+  repository         GitHubRepository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status             String   @default("COMPLETED") // PENDING | ANALYZING | COMPLETED | FAILED
+  analyzedAt         DateTime @default(now())
+  projectSummary     String?  @db.Text
+  architectureSummary String? @db.Text
+  detectedStack      String[] @default([])
+  engineeringAreas   String[] @default([])
+  engineeringSignals Json?    // README presence/length, test framework, CI/CD, Docker, linting, env config
+  activitySignals    Json?    // Commits, active periods, maintenance
+  aiReview           Json?    // Maintainability, organization, documentation, testing, duplication, error handling
+  resumeBullets      String[] @default([])
+  interviewQuestions Json?    // Technical and system design interview questions derived from repo stack
+  errorMessage       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([repositoryId])
+  @@index([userId])
+  @@index([status])
+}
+
+model GitHubSkillEvidence {
+  id              String         @id @default(uuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  githubAccountId String?
+  githubAccount   GitHubAccount? @relation(fields: [githubAccountId], references: [id], onDelete: Cascade)
+  repositoryId    String?
+  repository      GitHubRepository? @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  skill           String
+  category        String         // Frontend, Backend, Languages, Database, Cloud/DevOps, AI/ML
+  evidenceLevel   String         // STRONG | MODERATE | LIMITED | DETECTED | INSUFFICIENT
+  evidenceDetails String[]       @default([])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([skill])
+  @@index([evidenceLevel])
+}
+
 
 

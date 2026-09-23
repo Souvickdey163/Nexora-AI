@@ -8,6 +8,8 @@ import authRoutes from './routes/auth.routes';
 import resumeRoutes from './routes/resume.routes';
 import mentorRoutes from './routes/mentor.routes';
 import codingRoutes from './routes/coding.routes';
+import interviewRoutes from './routes/interview.routes';
+import githubRoutes from './routes/github.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -64,7 +66,14 @@ app.use('/api/v1/mentor', mentorRoutes);
 app.use('/api/coding', codingRoutes);
 app.use('/api/v1/coding', codingRoutes);
 
+app.use('/api/interviews', interviewRoutes);
+app.use('/api/v1/interviews', interviewRoutes);
+
+app.use('/api/github', githubRoutes);
+app.use('/api/v1/github', githubRoutes);
+
 // Global Error Handler
 app.use(errorHandler);
 
 export default app;
+

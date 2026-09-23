@@ -62,7 +62,7 @@ export function ResumePageClient() {
       }
 
       const resumeId = uploadRes.data.resumeId || uploadRes.data.id;
-      const versionId = uploadRes.data.id || uploadRes.data.currentVersion?.id;
+      const versionId = uploadRes.data.currentVersion?.id || uploadRes.data.currentVersionId || uploadRes.data.id;
       
       setCurrentResumeId(resumeId);
       setCurrentVersionId(versionId);
