@@ -1,325 +1,144 @@
-# Nexora AI - Authentication API Documentation
+# Nexora AI Career Copilot — Comprehensive API Documentation
 
-Base URL: `http://localhost:5000/api/auth` (or `/api/v1/auth`)
-
----
-
-## Response Format
-
-### Success Response
-```json
-{
-  "success": true,
-  "message": "Operation completed successfully",
-  "data": {}
-}
-```
-
-### Error Response
-```json
-{
-  "success": false,
-  "error": "Error description message",
-  "code": "OPTIONAL_ERROR_CODE",
-  "errors": {
-    "field": ["Field specific error message"]
-  }
-}
-```
+Welcome to the Nexora REST API documentation. All endpoints accept and return JSON format (`application/json`). Authenticated routes require a Bearer token in the `Authorization` header: `Authorization: Bearer <jwt_access_token>`.
 
 ---
 
-## Endpoints
+## 1. Authentication & OAuth (`/api/auth`)
 
-### 1. Health Check
-`GET /health`
-
-**Response:**
-```json
-{
-  "status": "ok",
-  "service": "Nexora Backend Express API",
-  "database": "connected",
-  "timestamp": "2026-08-25T12:00:00.000Z"
-}
-```
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/auth/register` | `POST` | No | Register a new user. Automatically grants **10 Welcome Credits** exactly once. |
+| `/api/auth/login` | `POST` | No | Authenticate user with email and password. Returns JWT access token. |
+| `/api/auth/google` | `GET` | No | Initiates Google OAuth 2.0 flow. Captures profile picture (`picture`/avatar). |
+| `/api/auth/google/callback` | `GET` | No | Google OAuth 2.0 callback URL. Syncs profile image and grants 10 credits if new user. |
+| `/api/auth/me` | `GET` | Yes | Returns current authenticated user profile, avatar, and credit balance. |
+| `/api/auth/logout` | `POST` | Yes | Clears session cookie / revokes refresh token. |
 
 ---
 
-### 2. User Registration
-`POST /api/auth/register`
+## 2. Credits System (`/api/credits`)
 
-**Request Body:**
-```json
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john.doe@example.com",
-  "password": "Password123!"
-}
-```
+Nexora operates on a credit-based model. Each feature operation has a defined credit cost:
+- Welcome Bonus: **10 Free Credits** (New users only)
+- Resume ATS Analysis: **1 Credit**
+- AI Mentor Chat: **1 Credit**
+- AI Mock Interview Session: **3 Credits**
+- Skill Assessment Quiz: **2 Credits**
+- Personalized Career Roadmap: **2 Credits**
+- GitHub Repository Analysis: **2 Credits**
 
-**Response (201 Created):**
-```json
-{
-  "success": true,
-  "message": "Registration successful! Verification OTP code has been sent to your email.",
-  "data": {
-    "user": {
-      "id": "uuid-v4",
-      "email": "john.doe@example.com",
-      "firstName": "John",
-      "lastName": "Doe",
-      "name": "John Doe",
-      "emailVerified": false,
-      "status": "UNVERIFIED"
-    }
-  }
-}
-```
+When credits are insufficient, the API returns **HTTP status `402 Payment Required`** with `code: "INSUFFICIENT_CREDITS"`.
+
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/credits/balance` | `GET` | Yes | Returns current user credit balance. |
+| `/api/credits/history` | `GET` | Yes | Returns transaction audit log (grants, deductions, purchases). |
 
 ---
 
-### 3. Verify Email OTP
-`POST /api/auth/verify-email`
+## 3. Razorpay Payments & Webhooks (`/api/payments`)
 
-**Request Body:**
-```json
-{
-  "email": "john.doe@example.com",
-  "otp": "123456"
-}
-```
+Razorpay is integrated in **TEST MODE** with server-side HMAC-SHA256 signature verification and idempotent credit fulfillment. Frontend price or credit parameters are never trusted.
 
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "message": "Email address verified successfully!",
-  "data": {
-    "user": {
-      "id": "uuid-v4",
-      "email": "john.doe@example.com",
-      "emailVerified": true,
-      "status": "ACTIVE"
-    },
-    "tokens": {
-      "accessToken": "eyJhbGciOi...",
-      "refreshToken": "48b6c0...",
-      "expiresIn": "7d"
-    }
-  }
-}
-```
+### Pricing Tiers
+- **Starter Pack**: 50 Credits @ ₹499
+- **Pro Pack**: 150 Credits @ ₹1,199
+- **Unlimited Pack**: 500 Credits @ ₹2,999
+
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/payments/create-order` | `POST` | Yes | Initiates server-side Razorpay order creation for a specified pack ID. |
+| `/api/payments/verify` | `POST` | Yes | Verifies Razorpay payment signature and grants credits atomically. |
+| `/api/payments/webhook` | `POST` | Signature | Idempotent webhook handler verifying `x-razorpay-signature` raw body. |
 
 ---
 
-### 4. User Login
-`POST /api/auth/login`
+## 4. User Profile & Avatar Management (`/api/profile`)
 
-**Request Body:**
-```json
-{
-  "email": "john.doe@example.com",
-  "password": "Password123!"
-}
-```
+Supports single profile management and Google/GitHub OAuth profile picture sync.
 
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "message": "Sign in successful! Welcome to Nexora AI.",
-  "data": {
-    "user": {
-      "id": "uuid-v4",
-      "email": "john.doe@example.com",
-      "name": "John Doe",
-      "status": "ACTIVE"
-    },
-    "tokens": {
-      "accessToken": "eyJhbGciOi...",
-      "refreshToken": "48b6c0...",
-      "expiresIn": "7d"
-    }
-  }
-}
-```
+### Avatar Fallback Logic
+1. Uploaded Custom Avatar (`/uploads/avatars/...`)
+2. OAuth Profile Picture (Google `picture` / GitHub `avatar_url`)
+3. Generated Initials SVG Fallback (`https://ui-avatars.com/api/?name=User+Name`)
+
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/profile` | `GET` | Yes | Fetch complete profile metadata, target role, connected accounts, and credit history. |
+| `/api/profile` | `PUT` | Yes | Update target role, headline, bio, experience level, and preferred skills. |
+| `/api/profile/avatar` | `POST` | Yes | Upload custom user profile image (supports `multipart/form-data`). |
 
 ---
 
-### 5. Resend Verification OTP
-`POST /api/auth/resend-verification-otp`
+## 5. Personalized Career Roadmap (`/api/roadmap`)
 
-**Request Body:**
-```json
-{
-  "email": "john.doe@example.com"
-}
-```
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/roadmap/active` | `GET` | Yes | Fetch active career roadmap and milestones for current target role. |
+| `/api/roadmap/generate` | `POST` | Yes | Generate or update personalized pathway (Deducts **2 Credits**). |
+| `/api/roadmap/milestones/:id/toggle` | `PATCH` | Yes | Toggle completion status of a roadmap milestone node. |
 
 ---
 
-### 6. Forgot Password (Request Reset OTP)
-`POST /api/auth/forgot-password`
+## 6. Diagnostic Skill Assessment (`/api/assessment`)
 
-**Request Body:**
-```json
-{
-  "email": "john.doe@example.com"
-}
-```
-
----
-
-### 7. Verify Reset OTP
-`POST /api/auth/verify-reset-otp`
-
-**Request Body:**
-```json
-{
-  "email": "john.doe@example.com",
-  "otp": "123456"
-}
-```
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/assessment/categories` | `GET` | No | Fetch list of supported CS assessment domains (DSA, DBMS, OS, Networks, System Design). |
+| `/api/assessment/questions` | `GET` | Yes | Start timed diagnostic assessment session (Deducts **2 Credits**). |
+| `/api/assessment/start` | `POST` | Yes | Alternative endpoint to start assessment session (Deducts **2 Credits**). |
+| `/api/assessment/submit` | `POST` | Yes | Submit user answers for instant AI score evaluation and weak area feedback. |
+| `/api/assessment/history` | `GET` | Yes | Returns user's past assessment attempt scores and reports. |
 
 ---
 
-### 8. Reset Password
-`POST /api/auth/reset-password`
+## 7. Career Analytics & KPI Trends (`/api/analytics`)
 
-**Request Body:**
-```json
-{
-  "email": "john.doe@example.com",
-  "otp": "123456",
-  "newPassword": "NewPassword123!"
-}
-```
+Calculates real-time performance velocity across coding problems solved, interview scores, and resume ATS metrics. Returns `hasData: false` when activity volume is zero to present actionable onboarding states.
+
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/analytics/dashboard` | `GET` | Yes | Fetch user score trends, difficulty distributions, and average performance metrics. |
 
 ---
 
-### 9. Get Authenticated User Profile
-`GET /api/auth/me`
+## 8. Placement Intelligence & Readiness (`/api/placement`)
 
-**Headers:**
-`Authorization: Bearer <accessToken>`
+Provides explainable readiness score across 4 key dimensions:
+1. Interview Performance (40%)
+2. Coding Proficiency (30%)
+3. Resume Impact (15%)
+4. Roadmap Progress (15%)
 
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "uuid-v4",
-      "email": "john.doe@example.com",
-      "firstName": "John",
-      "lastName": "Doe",
-      "name": "John Doe",
-      "emailVerified": true,
-      "status": "ACTIVE",
-      "profile": {
-        "headline": "AI Candidate",
-        "skills": []
-      }
-    }
-  }
-}
-```
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/placement/readiness` | `GET` | Yes | Fetch readiness score, tier classification, verified strengths, gaps, and action items. |
 
 ---
 
-### 10. User Logout
-`POST /api/auth/logout`
+## 9. Learning Hub (`/api/learning`)
 
-**Headers:**
-`Authorization: Bearer <accessToken>`
-
----
-
-### 11. Refresh Token
-`POST /api/auth/refresh`
-
-**Request Body or Cookie:**
-```json
-{
-  "refreshToken": "48b6c0..."
-}
-```
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/learning/topics` | `GET` | Yes | Fetch curated DSA patterns, system design cheat sheets, and interview masterclasses. |
+| `/api/learning/progress/:topicId` | `POST` | Yes | Mark resource as completed or bookmarked. |
 
 ---
 
-### 12. Social OAuth Endpoints
-- `GET /api/auth/google`: Initiates Google OAuth consent screen.
-- `GET /api/auth/google/callback`: Handles Google OAuth callback code.
-- `GET /api/auth/github`: Initiates GitHub OAuth authorization.
-- `GET /api/auth/github/callback`: Handles GitHub OAuth callback code.
-- `GET /api/auth/linkedin`: Initiates LinkedIn OpenID authorization.
-- `GET /api/auth/linkedin/callback`: Handles LinkedIn callback code.
+## 10. Dashboard Command Center (`/api/dashboard`)
+
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/dashboard/overview` | `GET` | Yes | Returns aggregated stats, today's top 3 recommended actions, and activity summary. |
 
 ---
 
-## AI Resume Intelligence Endpoints (`/api/resumes`)
+## 11. Notifications & User Activity (`/api/notifications` & `/api/activities`)
 
-All endpoints require `Authorization: Bearer <accessToken>`.
-
-### 1. Upload Initial Resume
-`POST /api/resumes`
-- **Content-Type**: `multipart/form-data`
-- **Body**: `file` (PDF, max 10MB), optional `title` (string)
-- **Response**: `201 Created` with created `Resume` and `ResumeVersion` (Version 1).
-
-### 2. Upload New Resume Version
-`POST /api/resumes/:resumeId/versions`
-- **Content-Type**: `multipart/form-data`
-- **Body**: `file` (PDF)
-- **Response**: `201 Created` with new `ResumeVersion` (Version 2, 3...).
-
-### 3. List User Resumes
-`GET /api/resumes`
-- **Response**: `200 OK` list of resumes with latest score & version metadata.
-
-### 4. Get Resume Details
-`GET /api/resumes/:resumeId`
-- **Response**: `200 OK` resume details with all versions.
-
-### 5. Get Version Details
-`GET /api/resumes/:resumeId/versions/:versionId`
-- **Response**: `200 OK` version metadata, extracted text, and parsed profile skills.
-
-### 6. Download Version File (Secure Stream)
-`GET /api/resumes/:resumeId/versions/:versionId/file`
-- **Response**: `200 OK` binary PDF stream (Ownership validated via JWT).
-
-### 7. Analyze Resume Version
-`POST /api/resumes/:resumeId/versions/:versionId/analyze`
-- **Body**:
-  ```json
-  {
-    "targetRole": "Senior Fullstack Engineer",
-    "targetCompany": "Nexora AI",
-    "jobDescription": "Optional job description text..."
-  }
-  ```
-- **Response**: `200 OK` structured `ResumeAnalysis` with scores (0-100), ATS breakdown, strengths, weaknesses, missing keywords/skills, recommendations, and suggested bullet point changes.
-
-### 8. Get Analysis History
-`GET /api/resumes/:resumeId/analyses?page=1&limit=10`
-- **Response**: `200 OK` paginated history of all past analyses.
-
-### 9. Get Single Analysis Details
-`GET /api/resumes/:resumeId/analyses/:analysisId`
-- **Response**: `200 OK` full historical analysis details.
-
-### 10. Get Score Progression History
-`GET /api/resumes/:resumeId/progress`
-- **Response**: `200 OK` trajectory data showing `currentScore`, `previousScore`, `improvement`, and historical timeline.
-
-### 11. Get Dashboard Analytics Summary
-`GET /api/resumes/analytics/summary`
-- **Response**: `200 OK` aggregated statistics (`totalResumes`, `totalAnalyses`, `latestScore`, `averageScore`, `strongestCategory`, `weakestCategory`, `topMissingSkills`).
-
-### 12. Delete Resume
-`DELETE /api/resumes/:resumeId`
-- **Response**: `200 OK` removes database records and stored files from disk.
-
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/notifications` | `GET` | Yes | Returns user in-app notifications and unread count. |
+| `/api/notifications/:id/read` | `PATCH` | Yes | Mark specific notification as read. |
+| `/api/notifications/read-all` | `PATCH` | Yes | Mark all notifications as read. |
+| `/api/activities` | `GET` | Yes | Fetch chronological action trail of user platform activities. |

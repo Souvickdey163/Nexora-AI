@@ -52,7 +52,7 @@ export function FloatingAiAssistant() {
     id: "welcome-nexus-0",
     conversationId: "",
     role: "ASSISTANT",
-    content: `${userGreeting} I'm **Nexus AI** ⚡ — your smart career copilot. I can build placement roadmaps, explain DSA & system design, review ATS resumes, or optimize your engineering profile.\n\nHow can I help you excel today?`,
+    content: `${userGreeting} I'm **Nexus AI** ⚡ — your personal AI career copilot. I can build placement roadmaps, explain DSA & system design, review ATS resumes, or optimize your engineering profile.\n\nHow can I help you excel today?`,
     createdAt: new Date().toISOString(),
   });
 

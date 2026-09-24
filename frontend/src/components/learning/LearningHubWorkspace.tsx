@@ -1,91 +1,52 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { Badge } from "@/components/ui/Badge";
 import {
   BookOpen,
   Search,
-  Bookmark,
   Clock,
-  Video,
-  FileText,
-  Code2,
-  Sparkles,
   ExternalLink,
   CheckCircle2,
   Tag,
+  Loader2,
 } from "lucide-react";
-
-interface Resource {
-  id: string;
-  title: string;
-  category: string;
-  type: "Article" | "Video" | "Course" | "Cheat Sheet" | "Interview Guide";
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  duration: string;
-  progress: number; // 0 - 100
-  bookmarked: boolean;
-}
-
-const RESOURCES: Resource[] = [
-  {
-    id: "r1",
-    title: "System Design Cheat Sheet: Rate Limiters & Token Buckets",
-    category: "System Design",
-    type: "Cheat Sheet",
-    difficulty: "Intermediate",
-    duration: "15 mins",
-    progress: 100,
-    bookmarked: true,
-  },
-  {
-    id: "r2",
-    title: "Top 20 Data Structure Patterns for Tech Interviews",
-    category: "DSA",
-    type: "Interview Guide",
-    difficulty: "Intermediate",
-    duration: "45 mins",
-    progress: 60,
-    bookmarked: true,
-  },
-  {
-    id: "r3",
-    title: "Next.js 15 Server Components & Concurrency Deep Dive",
-    category: "Development",
-    type: "Article",
-    difficulty: "Advanced",
-    duration: "25 mins",
-    progress: 0,
-    bookmarked: false,
-  },
-  {
-    id: "r4",
-    title: "STAR Behavioral Interview Method Masterclass",
-    category: "Interview Preparation",
-    type: "Video",
-    difficulty: "Beginner",
-    duration: "30 mins",
-    progress: 20,
-    bookmarked: false,
-  },
-];
+import { learningApi, LearningTopic } from "@/lib/api/learning";
 
 export function LearningHubWorkspace() {
-  const [resources, setResources] = useState<Resource[]>(RESOURCES);
+  const [topics, setTopics] = useState<LearningTopic[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const toggleBookmark = (id: string) => {
-    setResources((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, bookmarked: !r.bookmarked } : r))
-    );
+  const fetchTopics = async () => {
+    setLoading(true);
+    const res = await learningApi.getTopics();
+    if (res.success && res.topics) {
+      setTopics(res.topics);
+    }
+    setLoading(false);
   };
 
-  const filteredResources = resources.filter((r) => {
-    const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || r.category === selectedCategory;
+  useEffect(() => {
+    fetchTopics();
+  }, []);
+
+  const handleToggleComplete = async (topicId: string, currentCompleted: boolean) => {
+    setTopics((prev) =>
+      prev.map((t) => (t.id === topicId ? { ...t, isCompleted: !currentCompleted } : t))
+    );
+    await learningApi.toggleProgress(topicId, !currentCompleted);
+  };
+
+  const categories = ["All", ...Array.from(new Set(topics.map((t) => t.category)))];
+
+  const filteredTopics = topics.filter((t) => {
+    const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          t.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "All" || t.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -122,7 +83,7 @@ export function LearningHubWorkspace() {
 
         {/* Category Pills */}
         <div className="flex flex-wrap items-center gap-2">
-          {["All", "System Design", "DSA", "Development", "Interview Preparation"].map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
@@ -139,60 +100,66 @@ export function LearningHubWorkspace() {
       </GlassCard>
 
       {/* Grid of Resource Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredResources.map((res) => (
-          <GlassCard key={res.id} className="space-y-4 flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Badge variant={res.type === "Cheat Sheet" ? "amber" : "sky"}>
-                  {res.type}
-                </Badge>
-                <button
-                  onClick={() => toggleBookmark(res.id)}
-                  className={`p-1.5 rounded-lg transition-colors ${
-                    res.bookmarked
-                      ? "text-amber-500 bg-amber-500/10"
-                      : "text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                  }`}
-                >
-                  <Bookmark className="w-4 h-4 fill-current" />
-                </button>
-              </div>
-
-              <h4 className="text-base font-extrabold text-slate-900 dark:text-white leading-snug">
-                {res.title}
-              </h4>
-
-              <div className="flex items-center gap-4 text-xs text-slate-500">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  {res.duration}
-                </span>
-                <span className="flex items-center gap-1 font-semibold text-sky-500">
-                  <Tag className="w-3.5 h-3.5" />
-                  {res.category}
-                </span>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
-              <div className="space-y-1">
-                <div className="flex justify-between text-[11px] font-semibold text-slate-500">
-                  <span>Progress</span>
-                  <span>{res.progress}%</span>
+      {loading ? (
+        <div className="text-center py-20">
+          <Loader2 className="w-8 h-8 text-sky-500 animate-spin mx-auto mb-2" />
+          <p className="text-xs font-medium text-slate-400">Loading curated resources...</p>
+        </div>
+      ) : filteredTopics.length === 0 ? (
+        <p className="text-xs text-slate-400 text-center py-12">No learning resources found matching your filter.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filteredTopics.map((res) => (
+            <GlassCard key={res.id} className="space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Badge variant={res.isCompleted ? "emerald" : "sky"}>
+                    {res.resourceType}
+                  </Badge>
+                  <button
+                    onClick={() => handleToggleComplete(res.id, res.isCompleted)}
+                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors ${
+                      res.isCompleted
+                        ? "text-emerald-500 bg-emerald-500/10"
+                        : "text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    {res.isCompleted ? "Completed" : "Mark Done"}
+                  </button>
                 </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                  <div style={{ width: `${res.progress}%` }} className="bg-sky-500 h-full" />
+
+                <h4 className="text-base font-extrabold text-slate-900 dark:text-white leading-snug">
+                  {res.title}
+                </h4>
+
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  {res.description}
+                </p>
+
+                <div className="flex items-center gap-4 text-xs text-slate-500">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    {res.estimatedMinutes} mins
+                  </span>
+                  <span className="flex items-center gap-1 font-semibold text-sky-500">
+                    <Tag className="w-3.5 h-3.5" />
+                    {res.category}
+                  </span>
                 </div>
               </div>
 
-              <GlowButton size="sm" fullWidth icon={ExternalLink}>
-                {res.progress > 0 ? "Continue Learning" : "Start Resource"}
-              </GlowButton>
-            </div>
-          </GlassCard>
-        ))}
-      </div>
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+                <a href={res.url} target="_blank" rel="noopener noreferrer">
+                  <GlowButton size="sm" fullWidth icon={ExternalLink}>
+                    Open Free Resource
+                  </GlowButton>
+                </a>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

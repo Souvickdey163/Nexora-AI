@@ -93,7 +93,7 @@ export function CareerMentorWorkspace() {
     id: "welcome-0",
     conversationId: "",
     role: "ASSISTANT",
-    content: `Hello ${greetingName}! I'm **Nexus AI** ⚡ — your AI Career Copilot powered by Gemini 2.5 Flash. I'm here to provide personalized guidance on resume ATS optimization, career progression, DSA, system design, and placement preparation.\n\nHow can I help guide your engineering career today?`,
+    content: `Hello ${greetingName}! I'm **Nexus AI** ⚡ — your personal AI career copilot powered by Gemini 2.5 Flash. I'm here to provide personalized guidance on resume ATS optimization, career progression, DSA, system design, and placement preparation.\n\nHow can I help guide your engineering career today?`,
     createdAt: new Date().toISOString(),
   });
 

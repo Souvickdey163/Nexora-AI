@@ -19,6 +19,9 @@ import { ThemeToggle } from "./ThemeToggle";
 import { MobileMenu } from "./MobileMenu";
 import { NexoraLogo } from "@/components/common/Logo";
 import { useAuth } from "@/context/AuthContext";
+import { Avatar } from "@/components/common/Avatar";
+import { CreditBalance } from "@/components/common/CreditBalance";
+import { NotificationDrawer } from "@/components/common/NotificationDrawer";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -120,77 +123,97 @@ export function Navbar() {
             <ThemeToggle />
 
             {isLoggedIn ? (
-              /* User Profile Dropdown Pill after Signing In */
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white transition-all shadow-sm focus:outline-none"
-                >
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                    {initials}
-                  </div>
-                  <span className="text-xs font-bold tracking-tight">{displayName}</span>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${
-                      profileOpen ? "rotate-180 text-sky-500" : ""
-                    }`}
-                  />
-                </button>
+              <div className="flex items-center gap-3">
+                {/* Dynamic Credit Balance Badge */}
+                <CreditBalance compact />
 
-                {/* Profile Dropdown Menu */}
-                {profileOpen && (
-                  <div
-                    className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 space-y-1 animate-fadeIn"
-                    onMouseLeave={() => setProfileOpen(false)}
+                {/* In-app Notifications */}
+                <NotificationDrawer />
+
+                {/* User Profile Dropdown Pill after Signing In */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setProfileOpen(!profileOpen)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white transition-all shadow-sm focus:outline-none"
                   >
-                    <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
-                      <p className="text-xs font-bold text-slate-900 dark:text-white">{displayName}</p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{user?.email || ""}</p>
-                      <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[9px] font-extrabold border border-sky-500/20">
-                        Candidate Profile
-                      </span>
+                    <Avatar
+                      src={user?.avatar || user?.avatarUrl}
+                      name={displayName}
+                      size="sm"
+                    />
+                    <span className="text-xs font-bold tracking-tight">{displayName}</span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${
+                        profileOpen ? "rotate-180 text-sky-500" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* Profile Dropdown Menu */}
+                  {profileOpen && (
+                    <div
+                      className="absolute right-0 top-full mt-2 w-60 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 space-y-1 animate-fadeIn"
+                      onMouseLeave={() => setProfileOpen(false)}
+                    >
+                      <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-2.5 mb-1">
+                          <Avatar
+                            src={user?.avatar || user?.avatarUrl}
+                            name={displayName}
+                            size="sm"
+                          />
+                          <div className="overflow-hidden">
+                            <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{displayName}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{user?.email || ""}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Balance</span>
+                          <span className="text-xs font-extrabold text-sky-600 dark:text-sky-400">⚡ {user?.credits ?? 0} Credits</span>
+                        </div>
+                      </div>
+
+                      <Link
+                        href="/profile"
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
+                      >
+                        <User className="w-4 h-4 text-sky-500" />
+                        <span>My Profile</span>
+                      </Link>
+
+                      <Link
+                        href="/"
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
+                      >
+                        <LayoutDashboard className="w-4 h-4 text-indigo-500" />
+                        <span>Dashboard</span>
+                      </Link>
+
+                      <Link
+                        href="/pricing"
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
+                      >
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <span>Upgrade / Buy Credits</span>
+                      </Link>
+
+                      <button
+                        onClick={async () => {
+                          setProfileOpen(false);
+                          await logout();
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors pt-2 border-t border-slate-100 dark:border-slate-800"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
                     </div>
-
-                    <Link
-                      href="/"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
-                    >
-                      <LayoutDashboard className="w-4 h-4 text-sky-500" />
-                      <span>Dashboard</span>
-                    </Link>
-
-                    <Link
-                      href="/resume"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
-                    >
-                      <FileText className="w-4 h-4 text-indigo-500" />
-                      <span>AI Resume Intelligence</span>
-                    </Link>
-
-                    <Link
-                      href="/interview"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
-                    >
-                      <Video className="w-4 h-4 text-cyan-500" />
-                      <span>AI Mock Interviews</span>
-                    </Link>
-
-                    <button
-                      onClick={async () => {
-                        setProfileOpen(false);
-                        await logout();
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors pt-2 border-t border-slate-100 dark:border-slate-800"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ) : (
               /* Sign In / Sign Up CTA when Guest */

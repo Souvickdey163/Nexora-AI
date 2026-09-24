@@ -37,9 +37,34 @@ export class InterviewController {
       }
 
       const body = createInterviewSchema.parse(req.body);
+
+      // Atomic Credit Deduction
+      const { creditService } = await import('../services/credit.service');
+      const { CREDIT_COSTS } = await import('../config/creditCosts');
+      const cost =
+        body.mode === InterviewMode.LIVE_INTERVIEW
+          ? CREDIT_COSTS.LIVE_INTERVIEW
+          : CREDIT_COSTS.MOCK_INTERVIEW;
+
+      const desc =
+        body.mode === InterviewMode.LIVE_INTERVIEW
+          ? 'Live AI Voice & Video Interview'
+          : 'AI Mock Interview Practice Session';
+
+      await creditService.deductCredits(userId, cost, 'INTERVIEW_AI', desc);
+
       const interview = await interviewService.createInterview(userId, body);
       res.status(201).json(interview);
     } catch (err: any) {
+      if (err.code === 'INSUFFICIENT_CREDITS') {
+        res.status(402).json({
+          error: err.message,
+          code: 'INSUFFICIENT_CREDITS',
+          requiredCredits: err.requiredCredits,
+          currentCredits: err.currentCredits,
+        });
+        return;
+      }
       const errMsg = formatErrorMessage(err);
       logger.error(`Error creating interview: ${errMsg}`);
       res.status(400).json({ error: errMsg });

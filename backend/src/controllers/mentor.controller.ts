@@ -121,9 +121,7 @@ export class MentorController {
     }
   }
 
-  /**
-   * POST /api/mentor/conversations/:id/messages or POST /api/mentor/chat
-   */
+  // POST /api/mentor/conversations/:id/messages or POST /api/mentor/chat
   public async sendMessage(req: Request, res: Response): Promise<void> {
     try {
       const userId = getUserId(req);
@@ -131,6 +129,16 @@ export class MentorController {
         res.status(401).json({ error: 'Unauthorized user.' });
         return;
       }
+
+      // Atomic Credit Deduction (1 credit per message)
+      const { creditService } = await import('../services/credit.service');
+      const { CREDIT_COSTS } = await import('../config/creditCosts');
+      await creditService.deductCredits(
+        userId,
+        CREDIT_COSTS.MENTOR_MESSAGE,
+        'AI_MENTOR',
+        'AI Career Mentor Message'
+      );
 
       const conversationId = req.params.id || req.body.conversationId;
       const { message } = req.body;
@@ -143,6 +151,16 @@ export class MentorController {
       res.status(200).json(responseDTO);
     } catch (err: any) {
       logger.error(`Error in sendMessage: ${err.message}`);
+
+      if (err.code === 'INSUFFICIENT_CREDITS') {
+        res.status(402).json({
+          error: err.message,
+          code: 'INSUFFICIENT_CREDITS',
+          requiredCredits: err.requiredCredits,
+          currentCredits: err.currentCredits,
+        });
+        return;
+      }
 
       const errMsg = err.message || '';
 

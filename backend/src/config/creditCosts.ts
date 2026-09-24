@@ -1,0 +1,11 @@
+export const CREDIT_COSTS = {
+  MENTOR_MESSAGE: 1,
+  RESUME_ANALYSIS: 2,
+  MOCK_INTERVIEW: 3,
+  LIVE_INTERVIEW: 5,
+  GITHUB_ANALYSIS: 2,
+  ROADMAP_GENERATION: 2,
+  SKILL_ASSESSMENT: 2,
+} as const;
+
+export type CreditActionType = keyof typeof CREDIT_COSTS;

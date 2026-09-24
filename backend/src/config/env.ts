@@ -51,6 +51,11 @@ const envSchema = z.object({
   MENTOR_MAX_CONTEXT_MESSAGES: z.string().transform((val) => parseInt(val, 10)).default('20'),
   MENTOR_DAILY_MESSAGE_LIMIT: z.string().transform((val) => parseInt(val, 10)).default('20'),
   MENTOR_RATE_LIMIT_PER_MINUTE: z.string().transform((val) => parseInt(val, 10)).default('10'),
+
+  // Razorpay Payment Configuration
+  RAZORPAY_KEY_ID: z.string().optional().default('rzp_test_mockkeyid123'),
+  RAZORPAY_KEY_SECRET: z.string().optional().default('rzp_test_mocksecret123'),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional().default('whsec_test_mocksecret123'),
 });
 
 const parseEnv = () => {

@@ -163,13 +163,33 @@ export class ResumeController {
       const { resumeId, versionId } = req.params;
       const dto = req.body;
 
+      // Atomic Credit Deduction (2 credits)
+      const { creditService } = await import('../services/credit.service');
+      const { CREDIT_COSTS } = await import('../config/creditCosts');
+      await creditService.deductCredits(
+        userId,
+        CREDIT_COSTS.RESUME_ANALYSIS,
+        'RESUME_AI',
+        'Resume AI Intelligence Analysis'
+      );
+
       const analysis = await resumeService.analyzeVersion(userId, resumeId, versionId, dto);
       res.status(200).json({
         success: true,
         message: 'Resume analysis completed successfully!',
         data: analysis,
       });
-    } catch (err) {
+    } catch (err: any) {
+      if (err.code === 'INSUFFICIENT_CREDITS') {
+        res.status(402).json({
+          success: false,
+          error: err.message,
+          code: 'INSUFFICIENT_CREDITS',
+          requiredCredits: err.requiredCredits,
+          currentCredits: err.currentCredits,
+        });
+        return;
+      }
       next(err);
     }
   }

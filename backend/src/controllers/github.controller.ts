@@ -112,6 +112,17 @@ export class GitHubController {
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required. Please log in.' });
       }
+
+      // Atomic Credit Deduction (2 credits)
+      const { creditService } = await import('../services/credit.service');
+      const { CREDIT_COSTS } = await import('../config/creditCosts');
+      await creditService.deductCredits(
+        userId,
+        CREDIT_COSTS.GITHUB_ANALYSIS,
+        'GITHUB_AI',
+        `GitHub AI Repo Analysis (${req.params.owner}/${req.params.repo})`
+      );
+
       const { owner, repo } = req.params;
       const analysis = await githubService.analyzeRepository(userId, owner, repo);
 
@@ -122,6 +133,17 @@ export class GitHubController {
       });
     } catch (err: any) {
       logger.error(`Error analyzing repository ${req.params.owner}/${req.params.repo}: ${err.message}`);
+
+      if (err.code === 'INSUFFICIENT_CREDITS') {
+        return res.status(402).json({
+          success: false,
+          error: err.message,
+          code: 'INSUFFICIENT_CREDITS',
+          requiredCredits: err.requiredCredits,
+          currentCredits: err.currentCredits,
+        });
+      }
+
       return res.status(400).json({ success: false, error: err.message || 'Failed to analyze repository.' });
     }
   }

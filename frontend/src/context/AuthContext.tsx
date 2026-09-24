@@ -11,7 +11,11 @@ export interface User {
   name?: string;
   role?: string;
   isEmailVerified?: boolean;
-  avatarUrl?: string;
+  avatar?: string | null;
+  avatarUrl?: string | null;
+  credits?: number;
+  profile?: any;
+  connectedAccounts?: string[];
   [key: string]: any;
 }
 
@@ -21,6 +25,8 @@ export interface AuthContextType {
   loading: boolean;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateCredits: (newCredits: number) => void;
+  updateUser: (partial: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -29,6 +35,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   logout: async () => {},
   refreshUser: async () => {},
+  updateCredits: () => {},
+  updateUser: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -77,6 +85,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateCredits = useCallback((newCredits: number) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, credits: newCredits };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("nexora_user", JSON.stringify(updated));
+      }
+      return updated;
+    });
+  }, []);
+
+  const updateUser = useCallback((partial: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...partial };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("nexora_user", JSON.stringify(updated));
+      }
+      return updated;
+    });
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
@@ -115,6 +145,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         logout,
         refreshUser,
+        updateCredits,
+        updateUser,
       }}
     >
       {children}

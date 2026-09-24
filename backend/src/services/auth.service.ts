@@ -4,6 +4,7 @@ import { tokenService } from './token.service';
 import { otpService } from './otp.service';
 import { UserStatus, OtpType, OAuthProvider } from '@prisma/client';
 import { UserResponse, OAuthUserProfile } from '../types/auth.types';
+import { creditService } from './credit.service';
 
 export class AuthService {
   /**
@@ -18,6 +19,8 @@ export class AuthService {
       name: user.name || `${user.firstName} ${user.lastName}`.trim(),
       emailVerified: user.emailVerified,
       avatar: user.avatar,
+      avatarUrl: user.avatar,
+      credits: user.credits ?? 10,
       status: user.status,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -80,6 +83,9 @@ export class AuthService {
         },
       },
     });
+
+    // Grant initial welcome bonus credits (10 credits exactly once)
+    await creditService.grantWelcomeBonus(newUser.id);
 
     // Generate & send registration OTP
     await otpService.sendOtp(normalizedEmail, OtpType.REGISTRATION, newUser.id);
@@ -354,6 +360,14 @@ export class AuthService {
       });
     }
 
+    // Ensure welcome bonus exists exactly once
+    await creditService.ensureWelcomeBonus(user.id);
+
+    // Fetch updated user to get accurate credits and avatar
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: user.id },
+    });
+
     // Generate JWT access token & session
     const accessToken = tokenService.generateAccessToken({
       userId: user.id,
@@ -364,7 +378,7 @@ export class AuthService {
     const tokens = await tokenService.createSession(user.id, accessToken, userAgent, ipAddress);
 
     return {
-      user: this.formatUser(user),
+      user: this.formatUser(updatedUser || user),
       tokens,
     };
   }
@@ -373,9 +387,16 @@ export class AuthService {
    * Get user profile by ID.
    */
   async getCurrentUser(userId: string) {
+    await creditService.ensureWelcomeBonus(userId);
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { profile: true },
+      include: {
+        profile: true,
+        oauthAccounts: {
+          select: { provider: true, createdAt: true },
+        },
+      },
     });
 
     if (!user) {
@@ -385,6 +406,7 @@ export class AuthService {
     return {
       ...this.formatUser(user),
       profile: user.profile,
+      connectedAccounts: user.oauthAccounts.map((acc) => acc.provider),
     };
   }
 }

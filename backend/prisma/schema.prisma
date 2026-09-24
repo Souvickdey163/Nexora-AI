@@ -36,6 +36,7 @@ model User {
   name          String?        // Full name computed or set
   emailVerified Boolean        @default(false)
   avatar        String?
+  credits       Int            @default(0)
   status        UserStatus     @default(UNVERIFIED)
   lastLoginAt   DateTime?
   createdAt     DateTime       @default(now())
@@ -55,6 +56,13 @@ model User {
   githubAccount       GitHubAccount?
   githubAnalyses      GitHubRepositoryAnalysis[]
   githubSkillEvidences GitHubSkillEvidence[]
+  creditTransactions  CreditTransaction[]
+  payments            Payment[]
+  roadmaps            CareerRoadmap[]
+  assessments         SkillAssessmentAttempt[]
+  activities          UserActivity[]
+  notifications       UserNotification[]
+  learningProgress    UserLearningProgress[]
 
   @@index([email])
 }
@@ -360,6 +368,9 @@ model UserProfile {
   headline    String?
   bio         String?
   skills      String[] @default([])
+  education   String?
+  location    String?
+  targetRole  String?
   githubUrl   String?
   linkedinUrl String?
   websiteUrl  String?
@@ -605,5 +616,219 @@ model GitHubSkillEvidence {
   @@index([evidenceLevel])
 }
 
+// ===================================================
+// CREDIT SYSTEM & RAZORPAY PAYMENT MODELS
+// ===================================================
+
+enum CreditTransactionType {
+  WELCOME_BONUS
+  AI_USAGE
+  RAZORPAY_PURCHASE
+  REFUND
+  ADMIN_ADJUSTMENT
+}
+
+enum PaymentStatus {
+  CREATED
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model CreditTransaction {
+  id                String                @id @default(uuid())
+  userId            String
+  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              CreditTransactionType
+  amount            Int
+  balanceBefore     Int
+  balanceAfter      Int
+  source            String?
+  description       String?
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  status            String                @default("COMPLETED")
+  createdAt         DateTime              @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([type])
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId         String
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?       @unique
+  razorpaySignature String?
+  amount            Int
+  currency          String        @default("INR")
+  creditsGranted    Int
+  status            PaymentStatus @default(CREATED)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ===================================================
+// CAREER ROADMAP MODELS
+// ===================================================
+
+model CareerRoadmap {
+  id              String             @id @default(uuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetRole      String
+  experienceLevel String             @default("Entry Level")
+  currentSkills   String[]           @default([])
+  skillGaps       String[]           @default([])
+  prioritySkills  String[]           @default([])
+  progressPct     Int                @default(0)
+  weeklySchedule  String             @default("6 Weeks")
+  weeklyPlan      Json?              // Array of weekly goals and focus areas
+  status          String             @default("ACTIVE") // ACTIVE | COMPLETED | ARCHIVED
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  milestones      RoadmapMilestone[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model RoadmapMilestone {
+  id            String        @id @default(uuid())
+  roadmapId     String
+  roadmap       CareerRoadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  stage         String        // Foundation, DSA, Core CS, Projects, Interview
+  title         String
+  description   String        @db.Text
+  difficulty    String        @default("Intermediate")
+  estimatedTime String        @default("1 Week")
+  completed     Boolean       @default(false)
+  resourceCount Int           @default(3)
+  order         Int           @default(0)
+  completedAt   DateTime?
+
+  @@index([roadmapId])
+}
+
+// ===================================================
+// SKILL ASSESSMENT MODELS
+// ===================================================
+
+model AssessmentQuestion {
+  id                 String   @id @default(uuid())
+  category           String   // DSA, Programming, DBMS, Computer Networks, Operating Systems, OOP, Web Development, System Design
+  difficulty         String   // EASY, MEDIUM, HARD
+  questionText       String   @db.Text
+  options            String[] @default([])
+  correctOptionIndex Int
+  explanation        String?  @db.Text
+  createdAt          DateTime @default(now())
+
+  @@index([category])
+  @@index([difficulty])
+}
+
+model SkillAssessmentAttempt {
+  id                 String   @id @default(uuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category           String
+  difficulty         String   @default("MEDIUM")
+  score              Int      @default(0)
+  totalQuestions     Int      @default(10)
+  correctAnswers     Int      @default(0)
+  accuracyPct        Int      @default(0)
+  timeTakenSeconds   Int      @default(0)
+  weakAreas          String[] @default([])
+  recommendations    String[] @default([])
+  questionDetails    Json?    // Array of { questionId, selectedIndex, correctIndex, isCorrect }
+  completedAt        DateTime @default(now())
+
+  @@index([userId])
+  @@index([category])
+  @@index([completedAt])
+}
+
+// ===================================================
+// LEARNING HUB MODELS
+// ===================================================
+
+model LearningTopic {
+  id               String                 @id @default(uuid())
+  slug             String                 @unique
+  title            String
+  category         String                 // Frontend, Backend, Systems, Algorithms, Databases, Cloud
+  difficulty       String                 @default("Intermediate")
+  estimatedMinutes Int                    @default(45)
+  description      String                 @db.Text
+  resources        Json                   // Array of { title, url, type, isFree }
+  createdAt        DateTime               @default(now())
+
+  userProgresses   UserLearningProgress[]
+
+  @@index([category])
+  @@index([slug])
+}
+
+model UserLearningProgress {
+  id           String        @id @default(uuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId      String
+  topic        LearningTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  isCompleted  Boolean       @default(false)
+  isBookmarked Boolean       @default(false)
+  completedAt  DateTime?
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([userId, topicId])
+  @@index([userId])
+}
+
+// ===================================================
+// GLOBAL USER ACTIVITY SYSTEM
+// ===================================================
+
+model UserActivity {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  actionType String   // RESUME_UPLOADED, RESUME_ANALYZED, CODING_SOLVED, INTERVIEW_COMPLETED, ASSESSMENT_COMPLETED, GITHUB_ANALYZED, ROADMAP_GENERATED, ROADMAP_TASK_COMPLETED, CREDIT_PURCHASED, CREDIT_CONSUMED
+  title      String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([actionType])
+}
+
+// ===================================================
+// IN-APP NOTIFICATION SYSTEM
+// ===================================================
+
+model UserNotification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String   @db.Text
+  type      String   @default("SYSTEM") // SYSTEM | CREDIT | ROADMAP | INTERVIEW | RESUME | ASSESSMENT
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
 
 

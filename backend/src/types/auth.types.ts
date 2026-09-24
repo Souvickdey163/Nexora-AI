@@ -22,6 +22,8 @@ export interface UserResponse {
   name: string;
   emailVerified: boolean;
   avatar: string | null;
+  avatarUrl?: string | null;
+  credits?: number;
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
