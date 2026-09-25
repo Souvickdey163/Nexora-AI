@@ -21,8 +21,8 @@ Welcome to the Nexora REST API documentation. All endpoints accept and return JS
 
 Nexora operates on a credit-based model. Each feature operation has a defined credit cost:
 - Welcome Bonus: **10 Free Credits** (New users only)
-- Resume ATS Analysis: **1 Credit**
-- AI Mentor Chat: **1 Credit**
+- Nexus AI Chatbot: **0 Credits (100% FREE)**
+- Resume ATS Analysis: **2 Credits**
 - AI Mock Interview Session: **3 Credits**
 - Skill Assessment Quiz: **2 Credits**
 - Personalized Career Roadmap: **2 Credits**

@@ -342,10 +342,10 @@ export default function PricingPage() {
               description="Real-time conversational voice interview with speech clarity and body language signals."
             />
             <CreditCostCard
-              icon={<Bot className="w-5 h-5 text-sky-500" />}
-              title="AI Career Mentor Message"
-              cost="1 Credit"
-              description="Direct AI career advice, code reviews, and interview guidance per prompt."
+              icon={<Bot className="w-5 h-5 text-emerald-500" />}
+              title="Nexus AI Chatbot Message"
+              cost="0 Credits (FREE)"
+              description="Unlimited direct AI career advice, code reviews, and placement guidance."
             />
             <CreditCostCard
               icon={<GitBranch className="w-5 h-5 text-purple-500" />}

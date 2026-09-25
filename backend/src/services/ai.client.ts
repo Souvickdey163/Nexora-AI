@@ -60,8 +60,23 @@ export class AIClientService {
     conversationHistory: Array<{ role: string; content: string }> = [],
     careerContext: Record<string, any> = {}
   ): Promise<{ message: string; model: string; provider: string }> {
-    logger.info(`🤖 Dispatching AI Mentor Chat Request to FastAPI microservice (${this.serviceUrl})`);
+    logger.info(`🤖 Dispatching Nexus AI Chat Request`);
 
+    // 1. Direct Google Gemini API Call if API Key configured
+    const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      try {
+        const directGeminiResult = await this.callDirectGeminiApi(apiKey, userMessage, conversationHistory, careerContext);
+        if (directGeminiResult) {
+          logger.info(`✅ Nexus AI response generated via direct Gemini API (${directGeminiResult.model})`);
+          return directGeminiResult;
+        }
+      } catch (err: any) {
+        logger.warn(`⚠️ Direct Gemini API call failed (${err.message}). Trying microservice or local fallback.`);
+      }
+    }
+
+    // 2. Try FastAPI Microservice if running
     try {
       const response = await fetch(`${this.serviceUrl}/api/ai/mentor/chat`, {
         method: 'POST',
@@ -78,27 +93,111 @@ export class AIClientService {
         throw new Error('AI Mentor is temporarily unavailable because the free AI quota has been reached. Please try again later.');
       }
 
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`AI Microservice returned HTTP ${response.status}: ${errText}`);
+      if (response.ok) {
+        const data = (await response.json()) as { message: string; model: string; provider: string };
+        return data;
       }
-
-      const data = (await response.json()) as { message: string; model: string; provider: string };
-      return data;
     } catch (err: any) {
       if (err.message && err.message.includes('quota has been reached')) {
         throw err;
       }
-      logger.warn(`⚠️ FastAPI AI service request failed (${err.message}). Using local dynamic mentor response engine.`);
-      return this.getLocalFallbackMentorChat(userMessage, careerContext);
     }
+
+    // 3. Intelligent Local Fallback Engine
+    return this.getLocalFallbackMentorChat(userMessage, careerContext);
+  }
+
+  private async callDirectGeminiApi(
+    apiKey: string,
+    userMessage: string,
+    history: Array<{ role: string; content: string }> = [],
+    context: Record<string, any> = {}
+  ): Promise<{ message: string; model: string; provider: string } | null> {
+    const systemPrompt = `You are Nexus AI — an elite, highly intelligent, friendly, and empowering AI Career Copilot for software engineers, computer science students, and technology professionals, built directly into the Nexora platform.
+
+Your Persona & Tone:
+- Name: Nexus AI
+- Identity: Nexora ("Your AI Career Copilot")
+- Tone: Warm, empathetic, professional, clear, structured, and deeply encouraging.
+
+Core Capabilities:
+1. Provide personalized, high-impact career guidance, software engineering growth pathways, ATS resume optimization, and technical interview strategies.
+2. Explain Data Structures & Algorithms (DSA), System Design patterns, Computer Science core concepts (DBMS, Operating Systems, Computer Networks, OOP), and full-stack software development.
+3. Be natural and conversational. If the user greets you (e.g. "hello", "hi", "how are you", "what's up"), respond warmly and naturally first before asking how you can help them excel today.
+4. Format all responses using rich GitHub-flavored Markdown:
+   - Use bold section titles and headers.
+   - Use structured bullet points and numbered steps.
+   - Use fenced code blocks with language specifiers (e.g. \`\`\`typescript, \`\`\`python, \`\`\`sql) for any code snippets.
+
+Candidate Context:
+${JSON.stringify(context, null, 2)}`;
+
+    const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+
+    // Bounded history (last 10 messages)
+    const recentHistory = history.slice(-10);
+    for (const item of recentHistory) {
+      const gRole = item.role.toLowerCase() === 'user' ? 'user' : 'model';
+      contents.push({
+        role: gRole,
+        parts: [{ text: item.content }],
+      });
+    }
+
+    // Append current user input
+    contents.push({
+      role: 'user',
+      parts: [{ text: userMessage }],
+    });
+
+    const modelsToTry = [env.GEMINI_MODEL || 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash'];
+
+    for (const model of modelsToTry) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(10000),
+          body: JSON.stringify({
+            system_instruction: {
+              parts: [{ text: systemPrompt }],
+            },
+            contents,
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 2048,
+            },
+          }),
+        });
+
+        if (response.ok) {
+          const resJson = (await response.json()) as any;
+          const responseText = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (responseText && responseText.trim()) {
+            return {
+              message: responseText.trim(),
+              model,
+              provider: 'google-gemini',
+            };
+          }
+        } else {
+          const errBody = await response.text();
+          logger.warn(`Gemini API call model ${model} HTTP ${response.status}: ${errBody}`);
+        }
+      } catch (err: any) {
+        logger.warn(`Gemini API call error for model ${model}: ${err.message}`);
+      }
+    }
+
+    return null;
   }
 
   public getLocalFallbackMentorChat(
     userMessage: string,
     careerContext: Record<string, any> = {}
   ): { message: string; model: string; provider: string } {
-    const msg = (userMessage || '').toLowerCase();
+    const msg = (userMessage || '').trim().toLowerCase();
     const problemTitle = careerContext.problemTitle || '';
     const difficulty = careerContext.difficulty || '';
     const topic = careerContext.topic || '';
@@ -106,26 +205,26 @@ export class AIClientService {
 
     let fallbackReply = '';
 
-    if (msg.includes('hint')) {
-      fallbackReply = `Here is a hint for solving **${problemTitle || 'this problem'}** (${difficulty} - ${topic}):\n\n1. Consider key constraints and what data structures allow optimal lookup or iteration for ${topic}.\n2. Try working through a small sample input by hand to identify the core pattern before coding.`;
-    } else if (msg.includes('explain_problem') || msg.includes('explain problem') || msg.includes('explain this coding problem')) {
-      fallbackReply = `**Problem Breakdown for ${problemTitle || 'this task'}**:\n- **Topic:** ${topic}\n- **Difficulty:** ${difficulty}\n- **Goal:** Understand input structure, edge cases (empty inputs, single elements, large bounds), and design an efficient algorithmic strategy in ${language}.`;
-    } else if (msg.includes('explain_error') || msg.includes('error')) {
-      fallbackReply = `**Debugging Assistance for ${language}**:\n- Check array index bounds, null/undefined pointers, or off-by-one errors.\n- Ensure your function return type matches expected output format.\n- Log key variables before the line where execution failed.`;
-    } else if (msg.includes('review_code') || msg.includes('review')) {
-      fallbackReply = `**Code Review Summary (${language})**:\n- **Structure:** Clean overall structure. Ensure proper naming conventions.\n- **Edge Cases:** Check zero/empty inputs, negative bounds, and extreme values.\n- **Optimization:** Look for opportunities to reduce nested loops.`;
-    } else if (msg.includes('analyze_complexity') || msg.includes('complexity')) {
-      fallbackReply = `**Complexity Analysis**:\n- **Time Complexity:** Evaluate loop iterations and recursion depth relative to input size N.\n- **Space Complexity:** Measure extra memory used (hash tables, arrays, call stack).`;
-    } else if (msg.includes('suggest_optimization') || msg.includes('optimize')) {
-      fallbackReply = `**Optimization Tip for ${topic || 'Algorithmic Problem'}**:\n- Using a Hash Map / Set can reduce search complexity from O(N) to O(1).\n- Two Pointers or Sliding Window can optimize nested loops to O(N).\n- Dynamic Programming can eliminate redundant subproblem calculations.`;
+    if (msg.includes('hello') || msg.includes('hi') || msg.includes('hey') || msg.includes('how are you')) {
+      fallbackReply = `Hello! I'm doing great, thank you for asking! 😊 I'm **Nexus AI** — your personal AI career copilot on Nexora.\n\nWhether you need help preparing for technical interviews, solving DSA challenges, optimizing your ATS resume score, or building a personalized placement roadmap, I'm here to guide you.\n\nWhat would you like to focus on today?`;
+    } else if (msg.includes('hint')) {
+      fallbackReply = `Here is a structured hint for solving **${problemTitle || 'this challenge'}** (${difficulty} - ${topic}):\n\n1. **Identify the Core Pattern:** Consider data structures like Hash Maps, Two Pointers, or Sliding Window that minimize lookups.\n2. **Hand Tracing:** Work through a simple array example step-by-step to spot repetitive operations before writing code.\n3. **Edge Cases:** Think about empty inputs, duplicates, or boundary limits.`;
+    } else if (msg.includes('explain_problem') || msg.includes('explain problem')) {
+      fallbackReply = `### Problem Breakdown: ${problemTitle || 'Algorithmic Challenge'}\n\n- **Category:** ${topic || 'Data Structures & Algorithms'}\n- **Difficulty:** ${difficulty || 'Medium'}\n- **Goal:** Understand input structure, identify constraints, and design an optimal solution in ${language}.\n\nNeed a step-by-step breakdown or hint? Let me know!`;
+    } else if (msg.includes('error') || msg.includes('debug')) {
+      fallbackReply = `### Debugging Checklist for ${language}:\n\n- **Bounds & Off-by-One:** Check loop limits and array indexing.\n- **Null / Undefined Handles:** Verify non-null references before accessing object properties.\n- **Return Types:** Ensure expected return signatures match function contract.`;
+    } else if (msg.includes('resume') || msg.includes('ats')) {
+      fallbackReply = `### ATS Resume Optimization Strategy:\n\n1. **Quantifiable Bullet Points:** Use numbers (e.g. *Reduced latency by 40%*, *Scaled API to 10k users*).\n2. **Target Keyword Density:** Match tech stack keywords explicitly from job descriptions.\n3. **Formatting:** Use single-column standard section headers (Skills, Experience, Projects, Education).`;
+    } else if (msg.includes('roadmap') || msg.includes('placement')) {
+      fallbackReply = `### Recommended 4-Week Placement Pathway:\n\n- **Week 1 (DSA):** Arrays, Strings, Sliding Window & Two Pointers.\n- **Week 2 (Core CS):** DBMS Transaction Isolation, PostgreSQL, B-Tree Indexes.\n- **Week 3 (System Design):** Rate Limiters, Load Balancing & Caching.\n- **Week 4 (Interviews):** STAR Method Behavioral Practice & Full Mock Sessions.`;
     } else {
-      fallbackReply = `Hello! I am your Nexora AI Career & Coding Mentor.\n\nRegarding your query: "${userMessage.substring(0, 100)}${userMessage.length > 100 ? '...' : ''}"\n\nFocus on mastering core fundamentals, practicing consistent problem solving, and refining your technical interview strategy!`;
+      fallbackReply = `Hello! I'm **Nexus AI**, your personal AI career copilot.\n\nRegarding your question about "${userMessage}":\n\nTo give you the most accurate advice, could you share a bit more context? For example:\n- Are you focusing on **DSA & Problem Solving**?\n- Preparing for **System Design & Mock Interviews**?\n- Optimizing your **ATS Resume & GitHub Portfolio**?\n\nI'm ready to dive into details with you!`;
     }
 
     return {
       message: fallbackReply,
-      model: 'nexora-local-mentor-v1',
-      provider: 'fallback-local',
+      model: 'nexus-ai-engine-v1',
+      provider: 'nexus-local',
     };
   }
 
@@ -139,7 +238,6 @@ export class AIClientService {
     const skills = parsedResume?.skills || [];
     const role = (targetRole || 'software engineer').toLowerCase();
 
-    // Target role expectations
     const roleSkillRequirements: Record<string, string[]> = {
       java: ['Java', 'Spring Boot', 'PostgreSQL', 'REST API', 'Microservices', 'Docker', 'AWS'],
       python: ['Python', 'Django', 'FastAPI', 'PostgreSQL', 'Docker', 'REST API', 'Git'],
@@ -369,4 +467,3 @@ export class AIClientService {
 }
 
 export const aiClient = new AIClientService();
-

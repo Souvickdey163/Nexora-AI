@@ -12,16 +12,15 @@ import {
   Copy,
   Check,
   RefreshCw,
-  User,
   Plus,
   Trash2,
   AlertTriangle,
-  ChevronRight,
   MessageSquare,
   Lock,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { mentorApi, MentorConversationDTO, MentorMessageDTO } from "@/lib/api/mentor";
+import { MarkdownRenderer } from "@/components/common/MarkdownRenderer";
 
 export function CareerMentorWorkspace() {
   const { user } = useAuth();
@@ -93,7 +92,7 @@ export function CareerMentorWorkspace() {
     id: "welcome-0",
     conversationId: "",
     role: "ASSISTANT",
-    content: `Hello ${greetingName}! I'm **Nexus AI** ⚡ — your personal AI career copilot powered by Gemini 2.5 Flash. I'm here to provide personalized guidance on resume ATS optimization, career progression, DSA, system design, and placement preparation.\n\nHow can I help guide your engineering career today?`,
+    content: `Hello ${greetingName}! I'm **Nexus AI** ⚡ — your personal AI career copilot powered by Gemini 2.5 Flash.\n\nI'm here to help you with:\n- **DSA & Algorithmic Problem Solving**\n- **System Design & Core CS Fundamentals**\n- **ATS Resume Scans & Bullet Formatting**\n- **Mock Technical & HR Interview Practice**\n\nHow can I help guide your engineering career today?`,
     createdAt: new Date().toISOString(),
   });
 
@@ -219,7 +218,7 @@ export function CareerMentorWorkspace() {
               <MessageSquare className="w-3.5 h-3.5 text-sky-500" />
               Mentor Threads
             </span>
-            <Badge variant="sky">Gemini Free</Badge>
+            <Badge variant="emerald">100% Free</Badge>
           </div>
 
           <button
@@ -275,8 +274,8 @@ export function CareerMentorWorkspace() {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-500 flex items-center justify-center">
-                <BrainCircuit className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-md">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div>
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -285,7 +284,7 @@ export function CareerMentorWorkspace() {
                     gemini-2.5-flash
                   </span>
                 </h3>
-                <p className="text-[10px] text-slate-500">24/7 Smart Career Copilot for Software Engineers</p>
+                <p className="text-[10px] text-slate-500">24/7 Personal AI Career Copilot for Software Engineers</p>
               </div>
             </div>
           </div>
@@ -316,33 +315,50 @@ export function CareerMentorWorkspace() {
               return (
                 <div
                   key={msg.id}
-                  className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
+                  className={`flex items-start gap-2.5 ${isUser ? "flex-row-reverse" : "flex-row"}`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-bold text-slate-400">
-                      {isUser ? "You" : "Nexus AI"} • {formatTimestamp(msg.createdAt)}
-                    </span>
-                  </div>
-                  <div
-                    className={`p-4 rounded-2xl max-w-[88%] text-xs leading-relaxed ${
-                      isUser
-                        ? "bg-gradient-to-r from-sky-500 to-indigo-600 text-white rounded-br-none shadow-md"
-                        : "bg-slate-100 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 rounded-bl-none border border-slate-200 dark:border-slate-700/60"
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  {/* Avatar Badge */}
+                  {isUser ? (
+                    <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-[10px] flex items-center justify-center shrink-0 mt-1">
+                      {initials}
+                    </div>
+                  ) : (
+                    <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-1">
+                      <Sparkles className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  )}
 
-                    {!isUser && (
-                      <div className="flex items-center justify-end gap-2 pt-2.5 mt-2 border-t border-slate-200/50 dark:border-slate-700/50 text-[10px] text-slate-500">
-                        <button
-                          onClick={() => handleCopy(msg.id, msg.content)}
-                          className="hover:text-sky-500 flex items-center gap-1 transition-colors"
-                        >
-                          {copiedId === msg.id ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                          <span>{copiedId === msg.id ? "Copied" : "Copy"}</span>
-                        </button>
-                      </div>
-                    )}
+                  <div className={`flex flex-col max-w-[86%] ${isUser ? "items-end" : "items-start"}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-bold text-slate-400">
+                        {isUser ? "You" : "Nexus AI"} • {formatTimestamp(msg.createdAt)}
+                      </span>
+                    </div>
+                    <div
+                      className={`p-4 rounded-2xl text-xs leading-relaxed ${
+                        isUser
+                          ? "bg-gradient-to-r from-sky-500 to-indigo-600 text-white rounded-tr-none shadow-md font-medium"
+                          : "bg-slate-100 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 rounded-tl-none border border-slate-200 dark:border-slate-700/60"
+                      }`}
+                    >
+                      {isUser ? (
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      ) : (
+                        <MarkdownRenderer content={msg.content} />
+                      )}
+
+                      {!isUser && (
+                        <div className="flex items-center justify-end gap-2 pt-2.5 mt-2 border-t border-slate-200/50 dark:border-slate-700/50 text-[10px] text-slate-500">
+                          <button
+                            onClick={() => handleCopy(msg.id, msg.content)}
+                            className="hover:text-sky-500 flex items-center gap-1 transition-colors"
+                          >
+                            {copiedId === msg.id ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                            <span>{copiedId === msg.id ? "Copied" : "Copy"}</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -350,13 +366,18 @@ export function CareerMentorWorkspace() {
 
             {/* Loading Indicator */}
             {isLoading && (
-              <div className="flex flex-col items-start">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-bold text-slate-400">Nexus AI</span>
+              <div className="flex items-start gap-2.5">
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-1">
+                  <Sparkles className="w-3.5 h-3.5 text-white animate-spin" />
                 </div>
-                <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-xs flex items-center gap-2">
-                  <RefreshCw className="w-3.5 h-3.5 text-sky-500 animate-spin" />
-                  <span className="text-slate-500 font-medium">Generating response...</span>
+                <div className="flex flex-col items-start">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-bold text-slate-400">Nexus AI</span>
+                  </div>
+                  <div className="p-3.5 rounded-2xl rounded-tl-none bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-xs flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-sky-500 animate-ping" />
+                    <span className="text-slate-500 font-medium">Nexus AI is generating thoughts...</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -398,7 +419,7 @@ export function CareerMentorWorkspace() {
                 }}
                 maxLength={4000}
                 disabled={isLoading}
-                placeholder="Ask your career mentor anything... (Shift+Enter for newline)"
+                placeholder="Ask Nexus anything about your career... (Shift+Enter for newline)"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
               />
               <span className="absolute bottom-1.5 right-2 text-[9px] text-slate-400">
@@ -436,12 +457,8 @@ export function CareerMentorWorkspace() {
               <span className="font-bold text-sky-500">Full Stack Engineer</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-500">AI Microservice:</span>
-              <span className="font-bold text-emerald-500">FastAPI Online</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-500">AI Provider:</span>
-              <span className="font-bold text-slate-900 dark:text-white">Gemini Free Tier</span>
+              <span className="text-slate-500">Engine:</span>
+              <span className="font-bold text-emerald-500">Google Gemini 2.5</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-500">Career Readiness:</span>
@@ -456,10 +473,10 @@ export function CareerMentorWorkspace() {
           <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-400 space-y-1">
             <div className="flex items-center gap-1 font-semibold text-slate-500">
               <Lock className="w-3 h-3 text-sky-500" />
-              <span>Zero-Cost Server Protection</span>
+              <span>Server-Side Security</span>
             </div>
             <p className="leading-tight">
-              Gemini API keys stay 100% server-side in FastAPI microservice. Rate limits apply per user.
+              Gemini API calls execute securely server-side. Your chat history is encrypted and private to your account.
             </p>
           </div>
         </GlassCard>

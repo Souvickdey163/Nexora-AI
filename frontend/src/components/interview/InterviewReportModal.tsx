@@ -123,7 +123,9 @@ export const InterviewReportModal: React.FC<InterviewReportModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                   <div className="text-slate-400">Face Visibility</div>
-                  <div className="text-base font-bold text-white mt-0.5">{presentation.faceVisibilityPct || 94}%</div>
+                  <div className="text-base font-bold text-white mt-0.5">
+                    {typeof presentation.faceVisibilityPct === 'number' ? presentation.faceVisibilityPct : 0}%
+                  </div>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                   <div className="text-slate-400">Camera Alignment</div>
@@ -135,7 +137,9 @@ export const InterviewReportModal: React.FC<InterviewReportModalProps> = ({
                 </div>
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                   <div className="text-slate-400">Gaze Shifts Detected</div>
-                  <div className="text-base font-bold text-white mt-0.5">{presentation.gazeShifts || 3} shifts</div>
+                  <div className="text-base font-bold text-white mt-0.5">
+                    {typeof presentation.gazeShifts === 'number' ? presentation.gazeShifts : 0} shifts
+                  </div>
                 </div>
               </div>
             </div>
@@ -148,12 +152,16 @@ export const InterviewReportModal: React.FC<InterviewReportModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                   <div className="text-slate-400">Average Speech WPM</div>
-                  <div className="text-base font-bold text-white mt-0.5">{speech.avgWpm || 135} WPM</div>
+                  <div className="text-base font-bold text-white mt-0.5">
+                    {typeof speech.avgWpm === 'number' ? speech.avgWpm : 0} WPM
+                  </div>
                   <div className="text-[10px] text-slate-500 mt-1">Target range: 120-160 WPM</div>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                   <div className="text-slate-400">Filler Words Total</div>
-                  <div className="text-base font-bold text-white mt-0.5">{speech.fillerWordsTotal || 2} words</div>
+                  <div className="text-base font-bold text-white mt-0.5">
+                    {typeof speech.fillerWordsTotal === 'number' ? speech.fillerWordsTotal : 0} words
+                  </div>
                   <div className="text-[10px] text-slate-500 mt-1">"um", "like", "actually"</div>
                 </div>
               </div>
@@ -161,7 +169,7 @@ export const InterviewReportModal: React.FC<InterviewReportModalProps> = ({
                 <div>
                   <div className="text-slate-400">Language Detection</div>
                   <div className="font-semibold text-slate-200 mt-0.5">
-                    English ({language.englishPct || 90}%) • Hindi ({language.hindiPct || 10}%)
+                    English ({typeof language.englishPct === 'number' ? language.englishPct : 100}%) • Hindi ({typeof language.hindiPct === 'number' ? language.hindiPct : 0}%)
                   </div>
                 </div>
                 <span className="px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 text-[10px] font-semibold border border-indigo-500/20">

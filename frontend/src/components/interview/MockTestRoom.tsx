@@ -39,6 +39,51 @@ export const MockTestRoom: React.FC<MockTestRoomProps> = ({ interview: initialIn
   const [timerSeconds, setTimerSeconds] = useState(0);
 
   const recognitionRef = useRef<any>(null);
+  const [integrityEvents, setIntegrityEvents] = useState<string[]>([]);
+
+  // Automatic Fullscreen & Integrity Monitoring
+  useEffect(() => {
+    if (typeof window !== 'undefined' && document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+
+    const handleBlur = () => {
+      const msg = `Window lost focus at ${new Date().toLocaleTimeString()}`;
+      setIntegrityEvents((prev) => [...prev, msg]);
+      interviewApi.logEvent(interview.id, 'WINDOW_BLUR', msg);
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        const msg = `Tab switch detected at ${new Date().toLocaleTimeString()}`;
+        setIntegrityEvents((prev) => [...prev, msg]);
+        interviewApi.logEvent(interview.id, 'TAB_SWITCH', msg);
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        const msg = `Exited fullscreen mode at ${new Date().toLocaleTimeString()}`;
+        setIntegrityEvents((prev) => [...prev, msg]);
+        interviewApi.logEvent(interview.id, 'FULLSCREEN_EXIT', msg);
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    document.addEventListener('visibilitychange', handleVisibility);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {}
+      }
+    };
+  }, [interview.id]);
 
   // Session timer
   useEffect(() => {
@@ -210,6 +255,12 @@ export const MockTestRoom: React.FC<MockTestRoomProps> = ({ interview: initialIn
       <div className="flex-1 max-w-5xl w-full mx-auto p-6 space-y-6 flex flex-col justify-center">
         {currentQuestion ? (
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6">
+            {integrityEvents.length > 0 && (
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <span>⚠️ Integrity Alert: Tab switch or fullscreen exit detected! Stay inside the exam room.</span>
+              </div>
+            )}
             {roomError && (
               <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between">
                 <div className="flex items-center gap-2">

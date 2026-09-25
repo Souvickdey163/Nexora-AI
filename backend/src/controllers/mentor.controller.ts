@@ -130,16 +130,7 @@ export class MentorController {
         return;
       }
 
-      // Atomic Credit Deduction (1 credit per message)
-      const { creditService } = await import('../services/credit.service');
-      const { CREDIT_COSTS } = await import('../config/creditCosts');
-      await creditService.deductCredits(
-        userId,
-        CREDIT_COSTS.MENTOR_MESSAGE,
-        'AI_MENTOR',
-        'AI Career Mentor Message'
-      );
-
+      // Nexus AI is 100% CREDIT FREE (0 credits required)
       const conversationId = req.params.id || req.body.conversationId;
       const { message } = req.body;
 

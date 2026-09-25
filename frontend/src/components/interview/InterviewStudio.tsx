@@ -299,6 +299,10 @@ export const InterviewStudio: React.FC = () => {
         interview={activeInterview}
         stream={mediaStream}
         onExit={() => {
+          if (mediaStream) {
+            mediaStream.getTracks().forEach((t) => t.stop());
+            setMediaStream(null);
+          }
           setActiveInterview(null);
           setStudioStep('setup');
           fetchHistory();

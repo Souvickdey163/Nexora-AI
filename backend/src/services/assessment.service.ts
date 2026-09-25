@@ -3,6 +3,8 @@ import { creditService } from './credit.service';
 import { CREDIT_COSTS } from '../config/creditCosts';
 import { activityService } from './activity.service';
 import { notificationService } from './notification.service';
+import { env } from '../config/env';
+import { logger } from '../utils/logger';
 
 const INITIAL_QUESTION_BANK = [
   // DSA
@@ -154,21 +156,21 @@ export class AssessmentService {
       `Skill Assessment (${category})`
     );
 
-    await this.ensureQuestionBank();
+    // 2. Try to generate brand new dynamic MCQs via Gemini API
+    let freshQuestions = await this.generateDynamicMCQsWithAI(category, difficulty, 5);
 
-    // 2. Fetch questions for selected category
-    let questions = await prisma.assessmentQuestion.findMany({
-      where: { category },
-      take: 10,
-    });
-
-    if (questions.length === 0) {
-      // Fallback: fetch any available questions
-      questions = await prisma.assessmentQuestion.findMany({ take: 10 });
+    if (!freshQuestions || freshQuestions.length === 0) {
+      await this.ensureQuestionBank();
+      const existing = await prisma.assessmentQuestion.findMany({
+        where: { category },
+      });
+      const pool = existing.length > 0 ? existing : await prisma.assessmentQuestion.findMany();
+      // Shuffle pool to return random order each session
+      freshQuestions = [...pool].sort(() => 0.5 - Math.random()).slice(0, 5);
     }
 
     // 3. Strip correctOptionIndex to prevent answer leakage
-    const safeQuestions = questions.map((q) => ({
+    const safeQuestions = freshQuestions.map((q) => ({
       id: q.id,
       category: q.category,
       difficulty: q.difficulty,
@@ -282,6 +284,74 @@ export class AssessmentService {
       orderBy: { completedAt: 'desc' },
       take: 20,
     });
+  }
+
+  private async generateDynamicMCQsWithAI(category: string, difficulty: string, count: number = 5) {
+    const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey) return null;
+
+    try {
+      const prompt = `Generate ${count} brand new, unique multiple-choice questions (MCQs) for candidate diagnostic assessment.
+Category: "${category}"
+Difficulty: "${difficulty}"
+
+Return a valid JSON array ONLY (no markdown code blocks, no plain text) of objects with this exact schema:
+[
+  {
+    "category": "${category}",
+    "difficulty": "${difficulty}",
+    "questionText": "Clear, precise technical question statement...",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctOptionIndex": 1,
+    "explanation": "Brief explanation of why Option B is correct..."
+  }
+]`;
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL || 'gemini-2.5-flash'}:generateContent?key=${apiKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(6000),
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: 'application/json', temperature: 0.7 },
+        }),
+      });
+
+      if (response.ok) {
+        const resJson = (await response.json()) as any;
+        const jsonText = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (jsonText) {
+          const parsed = JSON.parse(jsonText);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const createdQuestions = [];
+            for (const q of parsed) {
+              if (q.questionText && Array.isArray(q.options) && q.options.length === 4) {
+                const created = await prisma.assessmentQuestion.create({
+                  data: {
+                    category: q.category || category,
+                    difficulty: q.difficulty || difficulty,
+                    questionText: q.questionText,
+                    options: q.options,
+                    correctOptionIndex: typeof q.correctOptionIndex === 'number' ? q.correctOptionIndex : 0,
+                    explanation: q.explanation || 'Option evaluation completed.',
+                  },
+                });
+                createdQuestions.push(created);
+              }
+            }
+            if (createdQuestions.length > 0) {
+              logger.info(`✅ Generated ${createdQuestions.length} fresh dynamic MCQs via Gemini API for ${category}`);
+              return createdQuestions;
+            }
+          }
+        }
+      }
+    } catch (err: any) {
+      logger.warn(`⚠️ Failed to generate dynamic MCQs with Gemini: ${err.message}`);
+    }
+
+    return null;
   }
 }
 

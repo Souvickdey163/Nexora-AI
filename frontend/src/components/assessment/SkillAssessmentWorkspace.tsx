@@ -38,11 +38,48 @@ export function SkillAssessmentWorkspace() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [integrityAlert, setIntegrityAlert] = useState<string | null>(null);
   const [scoreResult, setScoreResult] = useState<{ score: number; passed: boolean; feedback?: string } | null>(null);
+
+  // Tab switch and Fullscreen integrity monitoring when active
+  React.useEffect(() => {
+    if (step !== "active") return;
+
+    if (typeof window !== "undefined" && document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+
+    const handleBlur = () => {
+      setIntegrityAlert(`Tab switch / Focus loss detected at ${new Date().toLocaleTimeString()}`);
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setIntegrityAlert(`Page hidden / Tab switch detected at ${new Date().toLocaleTimeString()}`);
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIntegrityAlert(`Exited fullscreen exam mode at ${new Date().toLocaleTimeString()}`);
+      }
+    };
+
+    window.addEventListener("blur", handleBlur);
+    document.addEventListener("visibilitychange", handleVisibility);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    return () => {
+      window.removeEventListener("blur", handleBlur);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, [step]);
 
   const handleStartQuiz = async () => {
     setLoading(true);
     setError(null);
+    setIntegrityAlert(null);
     const res = await assessmentApi.startAssessment({
       category: selectedCategory,
       difficulty,
@@ -163,6 +200,15 @@ export function SkillAssessmentWorkspace() {
 
       {step === "active" && questions.length > 0 && (
         <GlassCard className="space-y-6">
+          {integrityAlert && (
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-semibold flex items-center justify-between">
+              <span>⚠️ {integrityAlert}</span>
+              <button onClick={() => setIntegrityAlert(null)} className="text-xs font-bold underline">
+                Dismiss
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
             <Badge variant="amber">
               Question {currentIdx + 1} of {questions.length}

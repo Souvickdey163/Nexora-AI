@@ -56,6 +56,10 @@ const envSchema = z.object({
   RAZORPAY_KEY_ID: z.string().optional().default('rzp_test_mockkeyid123'),
   RAZORPAY_KEY_SECRET: z.string().optional().default('rzp_test_mocksecret123'),
   RAZORPAY_WEBHOOK_SECRET: z.string().optional().default('whsec_test_mocksecret123'),
+
+  // Gemini AI Provider
+  GEMINI_API_KEY: z.string().optional().default(''),
+  GEMINI_MODEL: z.string().optional().default('gemini-2.5-flash'),
 });
 
 const parseEnv = () => {
