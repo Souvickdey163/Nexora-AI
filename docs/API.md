@@ -106,14 +106,19 @@ Calculates real-time performance velocity across coding problems solved, intervi
 ## 8. Placement Intelligence & Readiness (`/api/placement`)
 
 Provides explainable readiness score across 4 key dimensions:
-1. Interview Performance (40%)
-2. Coding Proficiency (30%)
-3. Resume Impact (15%)
+1. Interview Readiness (40%)
+2. Coding Readiness (30%)
+3. Resume Readiness (15%)
 4. Roadmap Progress (15%)
 
-| Endpoint | Method | Auth Required | Description |
-| :--- | :--- | :--- | :--- |
-| `/api/placement/readiness` | `GET` | Yes | Fetch readiness score, tier classification, verified strengths, gaps, and action items. |
+| Endpoint | Method | Auth Required | Credit Cost | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `/api/placement/assess` | `POST` | Yes | 2 Credits | Calculate or recalculate placement readiness assessment for target role & company category. |
+| `/api/placement/current` | `GET` | Yes | 0 Credits | Retrieve latest calculated placement assessment with dimensions & recommendations. |
+| `/api/placement/history` | `GET` | Yes | 0 Credits | Retrieve historical placement assessment records and preparation trend. |
+| `/api/placement/summary` | `GET` | Yes | 0 Credits | Retrieve high-level placement status summary for dashboard indicators. |
+| `/api/placement/:id` | `GET` | Yes | 0 Credits | Retrieve specific placement assessment by ID with user ownership check. |
+| `/api/placement/:id/recommendations/:recId` | `PATCH` | Yes | 0 Credits | Toggle completion status of a placement recommendation item. |
 
 ---
 

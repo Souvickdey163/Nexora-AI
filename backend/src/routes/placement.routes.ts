@@ -20,6 +20,7 @@ router.use(authenticateToken);
 
 router.post('/assess', assessLimiter, (req, res) => placementController.assessReadiness(req, res));
 router.get('/current', (req, res) => placementController.getCurrentAssessment(req, res));
+router.get('/readiness', (req, res) => placementController.getCurrentAssessment(req, res));
 router.get('/history', (req, res) => placementController.getAssessmentHistory(req, res));
 router.get('/summary', (req, res) => placementController.getSummary(req, res));
 router.get('/:assessmentId', (req, res) => placementController.getAssessmentById(req, res));

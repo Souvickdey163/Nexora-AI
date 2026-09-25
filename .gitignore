@@ -1,4 +1,10 @@
-# dependencies
+# ==========================================
+# Nexora AI - Git Ignore
+# ==========================================
+
+# ------------------------------------------
+# Dependencies
+# ------------------------------------------
 node_modules/
 .pnp
 .pnp.*
@@ -8,34 +14,137 @@ node_modules/
 !.yarn/releases
 !.yarn/versions
 
-# testing
-coverage/
+# ------------------------------------------
+# Environment / Secrets
+# ------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.example.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Next.js
+# Explicit project environment files
+backend/.env
+backend/.env.*
+ai-service/.env
+ai-service/.env.*
+frontend/.env.local
+frontend/.env.*
+frontend/.env.production.local
+
+# ------------------------------------------
+# Next.js / Frontend
+# ------------------------------------------
 .next/
 out/
+.vercel/
 
-# production
+# ------------------------------------------
+# Production / Build
+# ------------------------------------------
 build/
+dist/
 
-# misc
-.DS_Store
-*.pem
+# ------------------------------------------
+# TypeScript
+# ------------------------------------------
+*.tsbuildinfo
+next-env.d.ts
 
-# debug
+# ------------------------------------------
+# Python
+# ------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ------------------------------------------
+# Testing
+# ------------------------------------------
+coverage/
+.nyc_output/
+
+# ------------------------------------------
+# Logs
+# ------------------------------------------
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 .pnpm-debug.log*
 
-# environment files
-.env
-.env.local
-.env.*.local
+# ------------------------------------------
+# User Uploaded Files
+# NEVER commit resumes, avatars, recordings, etc.
+# ------------------------------------------
+backend/uploads/
 
-# Vercel
-.vercel/
+# ------------------------------------------
+# Local Database / SQLite
+# ------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
 
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
+# ------------------------------------------
+# Prisma
+# ------------------------------------------
+# Do NOT ignore Prisma schema/migrations.
+# Only ignore local Prisma generated artifacts if needed.
+.prisma/
+
+# ------------------------------------------
+# IDE / Editors
+# ------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ------------------------------------------
+# macOS
+# ------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ------------------------------------------
+# Certificates / Private Keys
+# ------------------------------------------
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# ------------------------------------------
+# Temporary Files
+# ------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# ------------------------------------------
+# OS / Editor temporary files
+# ------------------------------------------
+*~

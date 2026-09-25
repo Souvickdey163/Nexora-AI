@@ -17,7 +17,7 @@ export class PlacementController {
    */
   async assessReadiness(req: Request, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).user?.id || (req as any).user?.userId;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized user context.' });
       }
@@ -68,16 +68,44 @@ export class PlacementController {
    */
   async getCurrentAssessment(req: Request, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).user?.id || (req as any).user?.userId;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized user context.' });
       }
 
       const assessment = await placementReadinessService.getCurrentAssessment(userId);
 
+      if (!assessment) {
+        // Fallback for new users without a calculated assessment yet
+        const emptyAssessment = {
+          overallScore: 0,
+          readinessLevel: 'Needs Attention',
+          evidenceCoverage: 0,
+          targetRole: 'Software Engineer',
+          companyCategory: 'Product Technology',
+          summary: 'Your placement assessment needs more evidence.',
+          strengths: [],
+          priorityAreas: [],
+          roleSpecificAdvice: [],
+          dimensions: [
+            { key: 'INTERVIEW', name: 'Interview Readiness', score: 0, weight: '40%', status: 'Insufficient Data', recommendation: 'Complete a mock interview' },
+            { key: 'CODING', name: 'Coding Readiness', score: 0, weight: '30%', status: 'Insufficient Data', recommendation: 'Solve coding challenges' },
+            { key: 'RESUME', name: 'Resume Readiness', score: 0, weight: '15%', status: 'Insufficient Data', recommendation: 'Upload resume' },
+            { key: 'ROADMAP', name: 'Roadmap Progress', score: 0, weight: '15%', status: 'Insufficient Data', recommendation: 'Generate roadmap' },
+          ],
+          recommendations: [],
+        };
+        return res.status(200).json({
+          success: true,
+          data: null,
+          readiness: emptyAssessment,
+        });
+      }
+
       return res.status(200).json({
         success: true,
         data: assessment,
+        readiness: assessment,
       });
     } catch (err: any) {
       logger.error(`Error in PlacementController.getCurrentAssessment: ${err.message}`);
@@ -94,7 +122,7 @@ export class PlacementController {
    */
   async getAssessmentHistory(req: Request, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).user?.id || (req as any).user?.userId;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized user context.' });
       }
@@ -121,7 +149,7 @@ export class PlacementController {
    */
   async getAssessmentById(req: Request, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).user?.id || (req as any).user?.userId;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized user context.' });
       }
@@ -148,7 +176,7 @@ export class PlacementController {
    */
   async toggleRecommendation(req: Request, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).user?.id || (req as any).user?.userId;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized user context.' });
       }
@@ -182,7 +210,7 @@ export class PlacementController {
    */
   async getSummary(req: Request, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).user?.id || (req as any).user?.userId;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized user context.' });
       }

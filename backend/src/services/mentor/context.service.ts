@@ -80,6 +80,35 @@ export class ContextService {
       };
     }
 
+    // Always check for latest Placement Assessment to enrich Nexus AI reasoning
+    try {
+      const placementAssessment = await prisma.placementAssessment.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        include: { dimensions: true },
+      });
+
+      if (placementAssessment) {
+        (context as any).placementReadiness = {
+          targetRole: placementAssessment.targetRole,
+          companyCategory: placementAssessment.companyCategory,
+          overallScore: placementAssessment.overallScore,
+          readinessLevel: placementAssessment.readinessLevel,
+          evidenceCoverage: placementAssessment.evidenceCoverage,
+          strengths: placementAssessment.strengths,
+          priorityAreas: placementAssessment.priorityAreas,
+          dimensions: placementAssessment.dimensions.map((d) => ({
+            dimension: d.dimension,
+            score: d.score,
+            evidenceLevel: d.evidenceLevel,
+            explanation: d.explanation,
+          })),
+        };
+      }
+    } catch (err) {
+      // Non-blocking
+    }
+
     return context;
   }
 }
