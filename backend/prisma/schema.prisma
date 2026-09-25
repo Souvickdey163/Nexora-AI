@@ -63,6 +63,7 @@ model User {
   activities          UserActivity[]
   notifications       UserNotification[]
   learningProgress    UserLearningProgress[]
+  placementAssessments PlacementAssessment[]
 
   @@index([email])
 }
@@ -829,6 +830,67 @@ model UserNotification {
   @@index([userId])
   @@index([isRead])
   @@index([createdAt])
+}
+
+// ===================================================
+// PLACEMENT INTELLIGENCE MODELS
+// ===================================================
+
+model PlacementAssessment {
+  id               String                  @id @default(uuid())
+  userId           String
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetRole       String                  @default("Software Engineer")
+  companyCategory  String                  @default("Product Technology")
+  overallScore     Int                     @default(0)
+  evidenceCoverage Int                     @default(0) // Percentage of total weight or available dimensions
+  readinessLevel   String                  @default("Needs Attention")
+  summary          String?                 @db.Text
+  strengths        String[]                @default([])
+  priorityAreas    String[]                @default([])
+  roleSpecificAdvice String[]              @default([])
+  aiExplanation    Json?                   // Full response from AI provider
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  dimensions       PlacementDimension[]
+  recommendations  PlacementRecommendation[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([targetRole])
+}
+
+model PlacementDimension {
+  id              String              @id @default(uuid())
+  assessmentId    String
+  assessment      PlacementAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  dimension       String              // INTERVIEW, CODING, RESUME, ROADMAP
+  score           Int?                // Null if evidence level is INSUFFICIENT
+  evidenceLevel   String              // STRONG, MODERATE, LIMITED, INSUFFICIENT
+  source          String
+  explanation     String              @db.Text
+  evidenceDetails String[]            @default([])
+  sourceUpdatedAt DateTime?
+  createdAt       DateTime            @default(now())
+
+  @@index([assessmentId])
+  @@index([dimension])
+}
+
+model PlacementRecommendation {
+  id           String              @id @default(uuid())
+  assessmentId String
+  assessment   PlacementAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  priority     String              @default("MEDIUM") // HIGH, MEDIUM, LOW
+  title        String
+  description  String              @db.Text
+  actionType   String              // PRACTICE_CODING, MOCK_INTERVIEW, IMPROVE_RESUME, CONTINUE_ROADMAP, TAKE_ASSESSMENT, GITHUB_ANALYSIS, ASK_NEXUS_AI
+  route        String
+  completed    Boolean             @default(false)
+  createdAt    DateTime            @default(now())
+
+  @@index([assessmentId])
 }
 
 

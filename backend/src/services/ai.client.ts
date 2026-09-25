@@ -464,6 +464,255 @@ ${JSON.stringify(context, null, 2)}`;
       ],
     };
   }
+
+  public async explainPlacementReadiness(data: {
+    targetRole: string;
+    companyCategory: string;
+    overallScore: number;
+    evidenceCoverage: number;
+    readinessLevel: string;
+    dimensions: Array<{
+      dimension: string;
+      score: number | null;
+      evidenceLevel: string;
+      source: string;
+      explanation: string;
+      evidenceDetails: string[];
+    }>;
+    githubEvidence?: string[];
+  }): Promise<{
+    summary: string;
+    strengths: string[];
+    priorityAreas: string[];
+    recommendedActions: Array<{
+      priority: 'HIGH' | 'MEDIUM' | 'LOW';
+      title: string;
+      description: string;
+      actionType: string;
+      route: string;
+    }>;
+    roleSpecificAdvice: string[];
+  }> {
+    logger.info(`🤖 Dispatching Placement Intelligence AI Explanation | Role: ${data.targetRole} | Score: ${data.overallScore}`);
+
+    const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      try {
+        const geminiRes = await this.callGeminiPlacementExplanation(apiKey, data);
+        if (geminiRes) {
+          logger.info(`✅ Placement Intelligence AI explanation generated via Gemini API.`);
+          return geminiRes;
+        }
+      } catch (err: any) {
+        logger.warn(`⚠️ Direct Gemini API call failed for Placement Intelligence (${err.message}). Using local dynamic engine.`);
+      }
+    }
+
+    return this.getLocalPlacementFallback(data);
+  }
+
+  private async callGeminiPlacementExplanation(
+    apiKey: string,
+    data: any
+  ): Promise<{
+    summary: string;
+    strengths: string[];
+    priorityAreas: string[];
+    recommendedActions: Array<{
+      priority: 'HIGH' | 'MEDIUM' | 'LOW';
+      title: string;
+      description: string;
+      actionType: string;
+      route: string;
+    }>;
+    roleSpecificAdvice: string[];
+  } | null> {
+    const systemPrompt = `You are Placement Intelligence AI — an explainable career preparation advisor inside Nexora.
+Your task is to analyze pre-calculated readiness evidence for a candidate target role and company category and generate structured, evidence-backed explanations.
+
+STRICT RULES:
+1. DO NOT modify, recalculate, or fabricate scores. The numeric overall score (${data.overallScore}/100) and dimension scores are calculated deterministically by Nexora backend.
+2. DO NOT predict hiring outcomes, hiring probabilities, or selection guarantees (e.g. NEVER say '85% chance', 'will get hired by Google', 'guaranteed placement').
+3. Use explainable preparation terminology: 'Readiness Index', 'Preparation Level', 'Strong Evidence', 'Developing', 'Needs Attention', 'Priority Areas', 'Recommended Next Actions'.
+4. Base all strengths and priority areas strictly on the provided evidence payload.
+5. Return ONLY a valid JSON object with exact keys:
+{
+  "summary": "String concise overall breakdown...",
+  "strengths": ["String...", "String..."],
+  "priorityAreas": ["String...", "String..."],
+  "recommendedActions": [
+    {
+      "priority": "HIGH" | "MEDIUM" | "LOW",
+      "title": "String",
+      "description": "String",
+      "actionType": "PRACTICE_CODING" | "MOCK_INTERVIEW" | "IMPROVE_RESUME" | "CONTINUE_ROADMAP" | "TAKE_ASSESSMENT" | "GITHUB_ANALYSIS" | "ASK_NEXUS_AI",
+      "route": "/features/coding" | "/features/interview" | "/features/resume" | "/features/roadmap" | "/features/assessment" | "/features/github" | "/features/mentor"
+    }
+  ],
+  "roleSpecificAdvice": ["String...", "String..."]
+}`;
+
+    const promptPayload = {
+      targetRole: data.targetRole,
+      companyCategory: data.companyCategory,
+      overallScore: data.overallScore,
+      evidenceCoverage: `${data.evidenceCoverage}%`,
+      readinessLevel: data.readinessLevel,
+      dimensions: data.dimensions,
+      githubEvidence: data.githubEvidence || [],
+    };
+
+    const modelsToTry = [env.GEMINI_MODEL || 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash'];
+    for (const model of modelsToTry) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(10000),
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: 'user', parts: [{ text: JSON.stringify(promptPayload) }] }],
+            generationConfig: {
+              temperature: 0.3,
+              responseMimeType: 'application/json',
+              maxOutputTokens: 2048,
+            },
+          }),
+        });
+
+        if (response.ok) {
+          const resJson = (await response.json()) as any;
+          const rawText = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (rawText) {
+            const parsed = JSON.parse(rawText);
+            if (parsed.summary && Array.isArray(parsed.strengths) && Array.isArray(parsed.recommendedActions)) {
+              return parsed;
+            }
+          }
+        }
+      } catch (err: any) {
+        logger.warn(`Gemini API placement error for model ${model}: ${err.message}`);
+      }
+    }
+    return null;
+  }
+
+  private getLocalPlacementFallback(data: any): {
+    summary: string;
+    strengths: string[];
+    priorityAreas: string[];
+    recommendedActions: Array<{
+      priority: 'HIGH' | 'MEDIUM' | 'LOW';
+      title: string;
+      description: string;
+      actionType: string;
+      route: string;
+    }>;
+    roleSpecificAdvice: string[];
+  } {
+    const role = data.targetRole || 'Software Engineer';
+    const cat = data.companyCategory || 'Product Technology';
+    const score = data.overallScore || 0;
+    const level = data.readinessLevel || 'Needs Attention';
+
+    const strongDims = data.dimensions.filter((d: any) => d.evidenceLevel === 'STRONG');
+    const weakDims = data.dimensions.filter((d: any) => d.evidenceLevel === 'LIMITED' || d.evidenceLevel === 'INSUFFICIENT');
+
+    const summary = `Your Placement Readiness Index for ${role} (${cat}) is ${score}/100, placing you at the "${level}" preparation level with ${data.evidenceCoverage}% evidence coverage across Nexora data sources.`;
+
+    const strengths: string[] = [];
+    if (strongDims.length > 0) {
+      strongDims.forEach((d: any) => {
+        strengths.push(`${d.dimension.charAt(0) + d.dimension.slice(1).toLowerCase()} Readiness: ${d.explanation}`);
+      });
+    } else {
+      strengths.push(`Your profile has active initial evidence in target role setup for ${role}.`);
+    }
+    if (data.githubEvidence && data.githubEvidence.length > 0) {
+      strengths.push(`GitHub Evidence: Verified project repositories and engineering signals.`);
+    }
+
+    const priorityAreas: string[] = [];
+    if (weakDims.length > 0) {
+      weakDims.forEach((d: any) => {
+        priorityAreas.push(`Improve ${d.dimension.charAt(0) + d.dimension.slice(1).toLowerCase()} readiness: ${d.explanation}`);
+      });
+    } else {
+      priorityAreas.push('Maintain practice consistency and solve higher-difficulty DSA problems.');
+    }
+
+    const recommendedActions: Array<{
+      priority: 'HIGH' | 'MEDIUM' | 'LOW';
+      title: string;
+      description: string;
+      actionType: string;
+      route: string;
+    }> = [];
+
+    data.dimensions.forEach((d: any) => {
+      if (d.dimension === 'INTERVIEW' && (d.evidenceLevel === 'LIMITED' || d.evidenceLevel === 'INSUFFICIENT' || (d.score ?? 0) < 70)) {
+        recommendedActions.push({
+          priority: 'HIGH',
+          title: 'Complete Mock Interview',
+          description: `Practice technical and behavioral interview questions tailored for ${role}.`,
+          actionType: 'MOCK_INTERVIEW',
+          route: '/features/interview',
+        });
+      }
+      if (d.dimension === 'CODING' && (d.evidenceLevel === 'LIMITED' || d.evidenceLevel === 'INSUFFICIENT' || (d.score ?? 0) < 70)) {
+        recommendedActions.push({
+          priority: 'HIGH',
+          title: 'Practice Coding Problems',
+          description: `Solve Medium-level DSA challenges on Coding Arena to boost technical accuracy.`,
+          actionType: 'PRACTICE_CODING',
+          route: '/features/coding',
+        });
+      }
+      if (d.dimension === 'RESUME' && (d.evidenceLevel === 'INSUFFICIENT' || (d.score ?? 0) < 70)) {
+        recommendedActions.push({
+          priority: 'HIGH',
+          title: 'Optimize Resume for Target Role',
+          description: `Upload and analyze your resume to align keywords with ${role} requirements.`,
+          actionType: 'IMPROVE_RESUME',
+          route: '/features/resume',
+        });
+      }
+      if (d.dimension === 'ROADMAP' && (d.evidenceLevel === 'INSUFFICIENT' || (d.score ?? 0) < 70)) {
+        recommendedActions.push({
+          priority: 'MEDIUM',
+          title: 'Generate Personalized Career Roadmap',
+          description: `Create a step-by-step learning roadmap tailored to ${role}.`,
+          actionType: 'CONTINUE_ROADMAP',
+          route: '/features/roadmap',
+        });
+      }
+    });
+
+    if (recommendedActions.length === 0) {
+      recommendedActions.push({
+        priority: 'MEDIUM',
+        title: 'Review System Design Fundamentals',
+        description: 'Conduct system design practice sessions and keep your coding practice consistent.',
+        actionType: 'PRACTICE_CODING',
+        route: '/features/coding',
+      });
+    }
+
+    const roleSpecificAdvice = [
+      `For ${role} roles at ${cat} companies, prioritize clean code organization, test coverage, and clear technical communication during mock interviews.`,
+      `Consistently solve 3-5 medium coding problems per week to maintain speed and problem-solving readiness.`,
+    ];
+
+    return {
+      summary,
+      strengths,
+      priorityAreas,
+      recommendedActions,
+      roleSpecificAdvice,
+    };
+  }
 }
 
 export const aiClient = new AIClientService();
+

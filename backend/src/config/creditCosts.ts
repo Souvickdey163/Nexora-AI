@@ -6,6 +6,7 @@ export const CREDIT_COSTS = {
   GITHUB_ANALYSIS: 2,
   ROADMAP_GENERATION: 2,
   SKILL_ASSESSMENT: 2,
+  PLACEMENT_ASSESSMENT: 2,
 } as const;
 
 export type CreditActionType = keyof typeof CREDIT_COSTS;
