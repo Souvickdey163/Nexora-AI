@@ -27,6 +27,9 @@ const dashboard_routes_1 = __importDefault(require("./routes/dashboard.routes"))
 const notification_routes_1 = __importDefault(require("./routes/notification.routes"));
 const activity_routes_1 = __importDefault(require("./routes/activity.routes"));
 const job_routes_1 = __importDefault(require("./routes/job.routes"));
+const quiz_routes_1 = __importDefault(require("./routes/quiz.routes"));
+const about_routes_1 = __importDefault(require("./routes/about.routes"));
+const support_routes_1 = __importDefault(require("./routes/support.routes"));
 const error_middleware_1 = require("./middleware/error.middleware");
 const app = (0, express_1.default)();
 app.use((0, helmet_1.default)({
@@ -101,5 +104,11 @@ app.use('/api/activities', activity_routes_1.default);
 app.use('/api/v1/activities', activity_routes_1.default);
 app.use('/api/jobs', job_routes_1.default);
 app.use('/api/v1/jobs', job_routes_1.default);
+app.use('/api/quiz', quiz_routes_1.default);
+app.use('/api/v1/quiz', quiz_routes_1.default);
+app.use('/api/about', about_routes_1.default);
+app.use('/api/v1/about', about_routes_1.default);
+app.use('/api/support', support_routes_1.default);
+app.use('/api/v1/support', support_routes_1.default);
 app.use(error_middleware_1.errorHandler);
 exports.default = app;

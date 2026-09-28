@@ -29,9 +29,11 @@ import {
 } from 'lucide-react';
 import { interviewApi, InterviewDTO, InterviewReportDTO, InterviewTypeOption } from '@/lib/api/interview';
 import { resumeApi } from '@/lib/api/resume';
+import { quizApi } from '@/lib/api/quiz';
 import { InterviewRoom } from './InterviewRoom';
 import { InterviewReportModal } from './InterviewReportModal';
 import { RecordingPlayerModal } from './RecordingPlayerModal';
+import { QuizMockTestWorkspace } from './QuizMockTestWorkspace';
 
 type StudioStep = 'setup' | 'instructions' | 'device_check' | 'fullscreen_check' | 'active_room';
 
@@ -40,7 +42,7 @@ export const InterviewStudio: React.FC = () => {
   const [studioStep, setStudioStep] = useState<StudioStep>('setup');
 
   // Step 1 Form Configuration
-  const [selectedMode, setSelectedMode] = useState<'MOCK_TEST' | 'LIVE_INTERVIEW'>('MOCK_TEST');
+  const [selectedMode, setSelectedMode] = useState<'QUIZ_MCQ' | 'MOCK_TEST' | 'LIVE_INTERVIEW'>('QUIZ_MCQ');
   const [targetRole, setTargetRole] = useState('Frontend Engineer');
   const [interviewType, setInterviewType] = useState<InterviewTypeOption>('TECHNICAL');
   const [difficulty, setDifficulty] = useState<'EASY' | 'MEDIUM' | 'HARD'>('MEDIUM');
@@ -68,7 +70,7 @@ export const InterviewStudio: React.FC = () => {
   const [activeInterview, setActiveInterview] = useState<InterviewDTO | null>(null);
 
   // History state
-  const [history, setHistory] = useState<InterviewDTO[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyFilter, setHistoryFilter] = useState<'ALL' | 'MOCK_TEST' | 'LIVE_INTERVIEW'>('ALL');
 
@@ -93,10 +95,37 @@ export const InterviewStudio: React.FC = () => {
     setIsLoadingHistory(true);
     try {
       const modeParam = historyFilter === 'ALL' ? undefined : historyFilter;
-      const res = await interviewApi.listInterviews({ mode: modeParam });
+      const [res, quizRes] = await Promise.all([
+        interviewApi.listInterviews({ mode: modeParam }),
+        historyFilter === 'ALL' || historyFilter === 'MOCK_TEST'
+          ? quizApi.getMockTestHistory()
+          : Promise.resolve(null),
+      ]);
+
+      let combined: any[] = [];
       if (res.success && res.data) {
-        setHistory(res.data.interviews);
+        combined = [...res.data.interviews];
       }
+
+      if (quizRes && quizRes.success && quizRes.history) {
+        const mappedQuizHistory = quizRes.history.map((q: any) => ({
+          id: q.id,
+          mode: 'MOCK_TEST',
+          type: 'TECHNICAL_MCQ',
+          targetRole: `${q.category} MCQ Mock Test`,
+          difficulty: q.difficulty,
+          durationMinutes: 15,
+          status: 'COMPLETED',
+          overallScore: q.accuracyPct,
+          createdAt: q.completedAt,
+          completedAt: q.completedAt,
+          isQuizMock: true,
+        }));
+        combined = [...combined, ...mappedQuizHistory];
+      }
+
+      combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setHistory(combined);
     } catch (err) {
       console.error('Failed to load interview history:', err);
     } finally {
@@ -228,7 +257,7 @@ export const InterviewStudio: React.FC = () => {
 
     try {
       const res = await interviewApi.createInterview({
-        mode: selectedMode,
+        mode: selectedMode === 'QUIZ_MCQ' ? 'MOCK_TEST' : selectedMode,
         type: interviewType,
         targetRole: targetRole.trim(),
         difficulty,
@@ -251,13 +280,18 @@ export const InterviewStudio: React.FC = () => {
     }
   };
 
-  const handleViewReport = async (interviewId: string, role: string, mode: string) => {
+  const handleViewReport = async (item: any) => {
+    if (item.isQuizMock) {
+      setSelectedMode('QUIZ_MCQ');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     try {
-      const res = await interviewApi.getInterview(interviewId);
+      const res = await interviewApi.getInterview(item.id);
       if (res.success && res.data && res.data.report) {
         setSelectedReport(res.data.report);
-        setSelectedReportRole(role);
-        setSelectedReportMode(mode);
+        setSelectedReportRole(item.targetRole);
+        setSelectedReportMode(item.mode);
       } else {
         setErrorMessage('Performance report is not available yet for this session.');
       }
@@ -359,7 +393,34 @@ export const InterviewStudio: React.FC = () => {
       {studioStep === 'setup' && (
         <div className="space-y-8">
           {/* Mode Selection Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              onClick={() => setSelectedMode('QUIZ_MCQ')}
+              className={`cursor-pointer rounded-3xl p-6 border transition-all flex flex-col justify-between space-y-4 ${
+                selectedMode === 'QUIZ_MCQ'
+                  ? 'bg-slate-900 border-indigo-500 ring-2 ring-indigo-500/30 shadow-2xl'
+                  : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+              }`}
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                    <Brain className="w-6 h-6" />
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedMode === 'QUIZ_MCQ' ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-800 text-slate-400'}`}>
+                    {selectedMode === 'QUIZ_MCQ' ? 'Selected' : 'Select Mode'}
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  Technical MCQ Mock Test
+                  <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 font-bold">QuizAPI</span>
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Interactive multiple-choice tests across 14+ technical subjects (Linux, DevOps, Docker, SQL, JS, Python, React, Security).
+                </p>
+              </div>
+            </div>
+
             <div
               onClick={() => setSelectedMode('MOCK_TEST')}
               className={`cursor-pointer rounded-3xl p-6 border transition-all flex flex-col justify-between space-y-4 ${
@@ -371,15 +432,15 @@ export const InterviewStudio: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                    <Brain className="w-6 h-6" />
+                    <Sparkles className="w-6 h-6" />
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedMode === 'MOCK_TEST' ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-800 text-slate-400'}`}>
                     {selectedMode === 'MOCK_TEST' ? 'Selected' : 'Select Mode'}
                   </span>
                 </div>
-                <h3 className="text-xl font-bold text-white">AI Mock Test</h3>
+                <h3 className="text-xl font-bold text-white">AI Written Assessment</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Structured adaptive test room. Evaluates candidate answers with category-specific rubrics and instant feedback.
+                  Open-ended written & voice answer evaluations with STAR method rubrics and instant AI feedback.
                 </p>
               </div>
             </div>
@@ -409,98 +470,102 @@ export const InterviewStudio: React.FC = () => {
             </div>
           </div>
 
-          {/* Configuration Form */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-indigo-400" /> Configure Interview Assessment
-            </h3>
+          {selectedMode === 'QUIZ_MCQ' ? (
+            <QuizMockTestWorkspace />
+          ) : (
+            /* Configuration Form for MOCK_TEST & LIVE_INTERVIEW */
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-indigo-400" /> Configure Interview Assessment
+              </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Target Job Role</label>
+                  <input
+                    type="text"
+                    value={targetRole}
+                    onChange={(e) => setTargetRole(e.target.value)}
+                    placeholder="e.g. Senior Frontend Engineer"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Interview Type</label>
+                  <select
+                    value={interviewType}
+                    onChange={(e) => setInterviewType(e.target.value as any)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium"
+                  >
+                    <option value="TECHNICAL">Technical Deep Dive</option>
+                    <option value="HR_BEHAVIORAL">HR & Behavioral</option>
+                    <option value="SYSTEM_DESIGN">System Design & Architecture</option>
+                    <option value="MIXED">Mixed Comprehensive Panel</option>
+                    <option value="RESUME_BASED">Resume & Project Deep Dive</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Difficulty Level</label>
+                  <select
+                    value={difficulty}
+                    onChange={(e) => setDifficulty(e.target.value as any)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium"
+                  >
+                    <option value="EASY">Easy (Junior Level)</option>
+                    <option value="MEDIUM">Medium (Mid Level)</option>
+                    <option value="HARD">Hard (Senior / Lead)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Optional Resume Context Selection */}
+              {userResumes.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                    <span>Target Candidate Resume Context (Optional)</span>
+                    <span className="text-slate-500 font-normal">Extracts skills & projects to tailor AI questions</span>
+                  </label>
+                  <select
+                    value={selectedResumeId}
+                    onChange={(e) => setSelectedResumeId(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="">No Resume (Default Role Target)</option>
+                    {userResumes.map((res) => (
+                      <option key={res.id} value={res.id}>
+                        {res.title || 'Uploaded Resume'} ({new Date(res.createdAt).toLocaleDateString()})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Target Job Role</label>
-                <input
-                  type="text"
-                  value={targetRole}
-                  onChange={(e) => setTargetRole(e.target.value)}
-                  placeholder="e.g. Senior Frontend Engineer"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium"
+                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                  <span>Target Job Description (Optional)</span>
+                  <span className="text-slate-500 font-normal">Customizes questions to match specific job postings</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  placeholder="Paste job description highlights..."
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Interview Type</label>
-                <select
-                  value={interviewType}
-                  onChange={(e) => setInterviewType(e.target.value as any)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium"
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={handleProceedToInstructions}
+                  className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-indigo-500/25"
                 >
-                  <option value="TECHNICAL">Technical Deep Dive</option>
-                  <option value="HR_BEHAVIORAL">HR & Behavioral</option>
-                  <option value="SYSTEM_DESIGN">System Design & Architecture</option>
-                  <option value="MIXED">Mixed Comprehensive Panel</option>
-                  <option value="RESUME_BASED">Resume & Project Deep Dive</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Difficulty Level</label>
-                <select
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value as any)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 font-medium"
-                >
-                  <option value="EASY">Easy (Junior Level)</option>
-                  <option value="MEDIUM">Medium (Mid Level)</option>
-                  <option value="HARD">Hard (Senior / Lead)</option>
-                </select>
+                  Continue to Pre-Interview Check <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
-
-            {/* Optional Resume Context Selection if user has uploaded resumes */}
-            {userResumes.length > 0 && (
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-between">
-                  <span>Target Candidate Resume Context (Optional)</span>
-                  <span className="text-slate-500 font-normal">Extracts skills & projects to tailor AI questions</span>
-                </label>
-                <select
-                  value={selectedResumeId}
-                  onChange={(e) => setSelectedResumeId(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
-                >
-                  <option value="">No Resume (Default Role Target)</option>
-                  {userResumes.map((res) => (
-                    <option key={res.id} value={res.id}>
-                      {res.title || 'Uploaded Resume'} ({new Date(res.createdAt).toLocaleDateString()})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-between">
-                <span>Target Job Description (Optional)</span>
-                <span className="text-slate-500 font-normal">Customizes questions to match specific job postings</span>
-              </label>
-              <textarea
-                rows={2}
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                placeholder="Paste job description highlights..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                onClick={handleProceedToInstructions}
-                className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-indigo-500/25"
-              >
-                Continue to Pre-Interview Check <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -795,7 +860,7 @@ export const InterviewStudio: React.FC = () => {
                       </td>
                       <td className="py-3 px-4 text-right space-x-2">
                         <button
-                          onClick={() => handleViewReport(item.id, item.targetRole, item.mode)}
+                          onClick={() => handleViewReport(item)}
                           className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-300 rounded-lg font-semibold transition"
                         >
                           View Report

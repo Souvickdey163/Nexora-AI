@@ -112,5 +112,76 @@ class EmailService {
             return true;
         }
     }
+    async sendSupportTicketConfirmationEmail(params) {
+        const mailSubject = `[Ticket #${params.ticketNumber}] Support Request Received - ${params.subject}`;
+        const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${mailSubject}</title>
+  <style>
+    body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 40px; shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+    .logo { font-size: 26px; font-weight: 800; color: #38bdf8; letter-spacing: -0.5px; margin-bottom: 24px; text-decoration: none; display: inline-block; }
+    .title { font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 16px; }
+    .text { font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 20px; }
+    .ticket-card { background: #090d16; border: 1px solid #0284c7; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .ticket-row { margin-bottom: 8px; font-size: 13px; }
+    .ticket-label { color: #64748b; font-weight: 600; display: inline-block; width: 100px; }
+    .ticket-val { color: #38bdf8; font-weight: 700; }
+    .desc-box { background: #182234; border-radius: 8px; padding: 12px; color: #cbd5e1; font-size: 13px; margin-top: 12px; }
+    .footer { font-size: 12px; color: #64748b; margin-top: 32px; border-top: 1px solid #334155; padding-top: 20px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">⚡ NEXORA AI SUPPORT</div>
+    <div class="title">Support Ticket Received</div>
+    <div class="text">Hello ${params.name},</div>
+    <div class="text">Thank you for reaching out to Nexora AI Support. We have received your request and our support team is reviewing it.</div>
+    
+    <div class="ticket-card">
+      <div class="ticket-row"><span class="ticket-label">Ticket ID:</span> <span class="ticket-val">${params.ticketNumber}</span></div>
+      <div class="ticket-row"><span class="ticket-label">Subject:</span> <span class="ticket-val" style="color: #ffffff;">${params.subject}</span></div>
+      <div class="ticket-row"><span class="ticket-label">Category:</span> <span class="ticket-val" style="color: #cbd5e1;">${params.category}</span></div>
+      <div class="ticket-row"><span class="ticket-label">Priority:</span> <span class="ticket-val" style="color: #f59e0b;">${params.priority}</span></div>
+      <div class="ticket-row"><span class="ticket-label">Status:</span> <span class="ticket-val" style="color: #10b981;">${params.status}</span></div>
+      <div class="desc-box">
+        <strong>Description:</strong><br/>
+        ${params.description}
+      </div>
+    </div>
+
+    <div class="text">Our support team usually responds within 24 hours. You can view updates to your support request in your Nexora dashboard.</div>
+
+    <div class="footer">
+      &copy; 2026 Nexora AI Support Team. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+    `;
+        if (this.transporter) {
+            try {
+                await this.transporter.sendMail({
+                    from: env_1.env.SMTP_FROM,
+                    to: params.email,
+                    subject: mailSubject,
+                    html: htmlContent,
+                });
+                logger_1.logger.info(`📧 Support Ticket Email sent to ${params.email} for ticket ${params.ticketNumber}`);
+                return true;
+            }
+            catch (err) {
+                logger_1.logger.error(`❌ Support Ticket Email failed: ${err.message || err}`);
+                return false;
+            }
+        }
+        else {
+            logger_1.logger.info(`📧 [EMAIL SIMULATION] Support Ticket Email for ${params.ticketNumber} to ${params.email}`);
+            return true;
+        }
+    }
 }
 exports.emailService = new EmailService();

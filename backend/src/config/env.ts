@@ -72,6 +72,10 @@ const envSchema = z.object({
   JOBVETTA_API_KEY: z.string().optional().default('jobvetta_secret_key_2026'),
   ADZUNA_APP_ID: z.string().optional().default('7648c839'),
   ADZUNA_APP_KEY: z.string().optional().default('9b6f83468b35f2844ded09aaa14ddf5d'),
+
+  // QuizAPI Configuration
+  QUIZAPI_BASE_URL: z.string().optional().default('https://quizapi.io/api/v1'),
+  QUIZAPI_KEY: z.string().optional().default('qa_sk_a712db1bf9fd3bcdf4b58daa1257d11874d6124c'),
 });
 
 const parseEnv = () => {

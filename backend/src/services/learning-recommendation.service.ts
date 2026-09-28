@@ -15,8 +15,8 @@ export class LearningRecommendationService {
     scoredResources: LearningResource[];
     recommendedForGaps: LearningResource[];
   }> {
-    // 1. Fetch user's profile and latest resume analysis / roadmap
-    const [profile, latestAnalysis, activeRoadmap] = await Promise.all([
+    // 1. Fetch user's profile, latest resume analysis, active roadmap, and weak mock tests
+    const [profile, latestAnalysis, activeRoadmap, weakMockTests] = await Promise.all([
       prisma.userProfile.findUnique({ where: { userId } }),
       prisma.resumeAnalysis.findFirst({
         where: { resumeVersion: { resume: { userId } } },
@@ -25,6 +25,10 @@ export class LearningRecommendationService {
       prisma.careerRoadmap.findFirst({
         where: { userId, status: 'ACTIVE' },
         orderBy: { createdAt: 'desc' },
+      }),
+      prisma.quizMockTest.findMany({
+        where: { userId, completed: true, accuracyPct: { lt: 60 } },
+        select: { category: true },
       }),
     ]);
 
@@ -36,7 +40,7 @@ export class LearningRecommendationService {
       profile.skills.forEach((s) => userSkillSet.add(s.trim().toLowerCase()));
     }
 
-    // Collect user missing skills / skill gaps from Resume analysis & Career Roadmap
+    // Collect user missing skills / skill gaps from Resume analysis, Career Roadmap, and Weak Mock Tests
     const missingSkillSet = new Set<string>();
     if (latestAnalysis?.missingSkills) {
       latestAnalysis.missingSkills.forEach((s) => missingSkillSet.add(s.trim().toLowerCase()));
@@ -46,6 +50,9 @@ export class LearningRecommendationService {
     }
     if (activeRoadmap?.prioritySkills) {
       activeRoadmap.prioritySkills.forEach((s) => missingSkillSet.add(s.trim().toLowerCase()));
+    }
+    if (weakMockTests && weakMockTests.length > 0) {
+      weakMockTests.forEach((t) => missingSkillSet.add(t.category.trim().toLowerCase()));
     }
 
     // Default missing skills fallback if user has no resume/roadmap analyzed yet

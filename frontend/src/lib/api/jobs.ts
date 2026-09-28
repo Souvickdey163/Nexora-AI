@@ -1,10 +1,9 @@
 import { getStoredAccessToken } from './auth';
 
 const getJobsApiBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/auth$/, '/jobs');
-  }
-  return 'http://localhost:5001/api/jobs';
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+  const cleanBase = envUrl.replace(/\/auth\/?$/, '').replace(/\/+$/, '');
+  return `${cleanBase}/jobs`;
 };
 
 async function fetchJobsApi<T = any>(endpoint: string, options: RequestInit = {}) {

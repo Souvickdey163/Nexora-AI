@@ -38,6 +38,7 @@ model User {
   emailVerified Boolean        @default(false)
   avatar        String?
   credits       Int            @default(0)
+  role          String         @default("USER") // USER | ADMIN | SUPPORT
   status        UserStatus     @default(UNVERIFIED)
   lastLoginAt   DateTime?
   createdAt     DateTime       @default(now())
@@ -66,6 +67,8 @@ model User {
   learningProgress    UserLearningProgress[]
   learningResourceProgresses UserLearningResourceProgress[]
   placementAssessments PlacementAssessment[]
+  quizMockTests       QuizMockTest[]
+  supportTickets      SupportTicket[]
 
   @@index([email])
 }
@@ -221,8 +224,22 @@ model InterviewEvent {
   @@index([interviewId])
 }
 
+// ===================================================
+// SYSTEM PLATFORM INFORMATION MODEL
+// ===================================================
 
-
+model PlatformInfo {
+  id          String   @id @default(uuid())
+  name        String   @default("Nexora AI")
+  tagline     String   @default("AI Career Copilot")
+  description String   @default("Nexora AI brings resume intelligence, coding practice, AI-powered mock interviews, career guidance, GitHub analysis, and placement intelligence into one unified platform.")
+  version     String   @default("2.4.0")
+  status      String   @default("operational")
+  modules     String[] @default(["Resume Intelligence", "AI Mock Interview", "Coding Arena", "AI Career Mentor", "GitHub Intelligence", "Placement Intelligence", "Job Discovery"])
+  techStack   String[] @default(["Next.js 16 (Turbopack)", "React 19", "TypeScript", "Tailwind CSS", "Express.js", "PostgreSQL", "Prisma ORM", "QuizAPI", "freeCodeCamp API", "Jobvetta API"])
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
 enum ParsingStatus {
   PENDING
   SUCCESS
@@ -890,6 +907,51 @@ model UserLearningResourceProgress {
 }
 
 // ===================================================
+// QUIZAPI MOCK TEST MODELS
+// ===================================================
+
+model QuizMockTest {
+  id               String                @id @default(uuid())
+  userId           String
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category         String
+  difficulty       String                @default("Medium")
+  totalQuestions   Int                   @default(10)
+  correctAnswers   Int                   @default(0)
+  incorrectAnswers Int                   @default(0)
+  unanswered       Int                   @default(0)
+  score            Int                   @default(0)
+  accuracyPct      Int                   @default(0)
+  questionsData    Json?                 // Normalized questions with correct answers stored for evaluation
+  answersData      Json?                 // User submitted selected answers
+  topicScores      Json?                 // Topic-wise accuracy breakdown
+  completed        Boolean               @default(false)
+  createdAt        DateTime              @default(now())
+  completedAt      DateTime?
+
+  attempts         QuizMockTestAttempt[]
+
+  @@index([userId])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model QuizMockTestAttempt {
+  id             String       @id @default(uuid())
+  mockTestId     String
+  mockTest       QuizMockTest @relation(fields: [mockTestId], references: [id], onDelete: Cascade)
+  questionId     String
+  questionText   String       @db.Text
+  selectedAnswer String?
+  correctAnswer  String
+  isCorrect      Boolean      @default(false)
+  explanation    String?      @db.Text
+  createdAt      DateTime     @default(now())
+
+  @@index([mockTestId])
+}
+
+// ===================================================
 // GLOBAL USER ACTIVITY SYSTEM
 // ===================================================
 
@@ -988,4 +1050,56 @@ model PlacementRecommendation {
   @@index([assessmentId])
 }
 
+// ===================================================
+// SUPPORT & TICKETING MODELS
+// ===================================================
 
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_USER
+  RESOLVED
+  CLOSED
+}
+
+enum SupportTicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SupportTicketCategory {
+  ACCOUNT_AUTH
+  RESUME_INTELLIGENCE
+  MOCK_INTERVIEW
+  CODING_ARENA
+  PAYMENTS_CREDITS
+  CAREER_INTELLIGENCE
+  TECHNICAL_ISSUE
+  GENERAL_FEEDBACK
+  OTHER
+}
+
+model SupportTicket {
+  id            String                @id @default(uuid())
+  ticketNumber  String                @unique
+  userId        String
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  email         String
+  category      SupportTicketCategory @default(TECHNICAL_ISSUE)
+  priority      SupportTicketPriority @default(MEDIUM)
+  subject       String
+  description   String                @db.Text
+  attachmentUrl String?
+  status        SupportTicketStatus   @default(OPEN)
+  adminResponse String?               @db.Text
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}

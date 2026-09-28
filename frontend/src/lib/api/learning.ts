@@ -1,10 +1,9 @@
 import { getStoredAccessToken } from './auth';
 
 const getLearningApiBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/auth$/, '/learning');
-  }
-  return 'http://localhost:5001/api/learning';
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+  const cleanBase = envUrl.replace(/\/auth\/?$/, '').replace(/\/+$/, '');
+  return `${cleanBase}/learning`;
 };
 
 async function fetchLearningApi<T = any>(endpoint: string, options: RequestInit = {}) {
