@@ -6,6 +6,7 @@ const password_1 = require("../utils/password");
 const token_service_1 = require("./token.service");
 const otp_service_1 = require("./otp.service");
 const client_1 = require("@prisma/client");
+const credit_service_1 = require("./credit.service");
 class AuthService {
     formatUser(user) {
         return {
@@ -16,6 +17,8 @@ class AuthService {
             name: user.name || `${user.firstName} ${user.lastName}`.trim(),
             emailVerified: user.emailVerified,
             avatar: user.avatar,
+            avatarUrl: user.avatar,
+            credits: user.credits ?? 10,
             status: user.status,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
@@ -63,6 +66,7 @@ class AuthService {
                 },
             },
         });
+        await credit_service_1.creditService.grantWelcomeBonus(newUser.id);
         await otp_service_1.otpService.sendOtp(normalizedEmail, client_1.OtpType.REGISTRATION, newUser.id);
         return {
             user: this.formatUser(newUser),
@@ -257,6 +261,10 @@ class AuthService {
                 },
             });
         }
+        await credit_service_1.creditService.ensureWelcomeBonus(user.id);
+        const updatedUser = await database_1.prisma.user.findUnique({
+            where: { id: user.id },
+        });
         const accessToken = token_service_1.tokenService.generateAccessToken({
             userId: user.id,
             email: user.email,
@@ -264,14 +272,20 @@ class AuthService {
         });
         const tokens = await token_service_1.tokenService.createSession(user.id, accessToken, userAgent, ipAddress);
         return {
-            user: this.formatUser(user),
+            user: this.formatUser(updatedUser || user),
             tokens,
         };
     }
     async getCurrentUser(userId) {
+        await credit_service_1.creditService.ensureWelcomeBonus(userId);
         const user = await database_1.prisma.user.findUnique({
             where: { id: userId },
-            include: { profile: true },
+            include: {
+                profile: true,
+                oauthAccounts: {
+                    select: { provider: true, createdAt: true },
+                },
+            },
         });
         if (!user) {
             throw new Error('User account not found.');
@@ -279,6 +293,7 @@ class AuthService {
         return {
             ...this.formatUser(user),
             profile: user.profile,
+            connectedAccounts: user.oauthAccounts.map((acc) => acc.provider),
         };
     }
 }

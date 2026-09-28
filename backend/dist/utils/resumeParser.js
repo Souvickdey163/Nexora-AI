@@ -16,13 +16,14 @@ const parseResumeText = (rawText) => {
     const githubMatch = text.match(githubRegex);
     const portfolioMatch = text.match(portfolioRegex);
     const knownSkillsList = [
-        'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin',
-        'React', 'Next.js', 'Vue', 'Angular', 'Node.js', 'Express', 'NestJS', 'Django', 'FastAPI', 'Spring Boot',
-        'HTML', 'CSS', 'Tailwind CSS', 'Sass', 'Redux', 'GraphQL', 'REST API',
-        'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Prisma', 'SQLite', 'Elasticsearch', 'DynamoDB',
-        'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'CI/CD', 'Git', 'GitHub Actions', 'Terraform',
-        'Jest', 'Cypress', 'Playwright', 'Selenium',
-        'Data Structures', 'Algorithms', 'System Design', 'Microservices', 'OOP', 'Agile', 'Scrum'
+        'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'SQL', 'R',
+        'React', 'Next.js', 'Vue', 'Angular', 'Svelte', 'HTML', 'CSS', 'Tailwind CSS', 'Sass', 'Redux', 'Zustand', 'GraphQL',
+        'Node.js', 'Express', 'NestJS', 'Django', 'FastAPI', 'Flask', 'Spring Boot', 'Spring', 'Ruby on Rails', 'REST API', 'gRPC',
+        'TensorFlow', 'PyTorch', 'Machine Learning', 'Deep Learning', 'Pandas', 'NumPy', 'Scikit-Learn', 'Keras', 'OpenCV', 'NLP', 'Computer Vision',
+        'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Prisma', 'SQLite', 'Elasticsearch', 'DynamoDB', 'Cassandra', 'Oracle',
+        'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'CI/CD', 'Git', 'GitHub Actions', 'Terraform', 'Ansible', 'Linux', 'Nginx',
+        'Jest', 'Cypress', 'Playwright', 'Selenium', 'Mocha', 'Chai', 'JUnit', 'PyTest',
+        'Data Structures', 'Algorithms', 'System Design', 'Microservices', 'OOP', 'Agile', 'Scrum', 'TDD'
     ];
     const extractedSkills = [];
     knownSkillsList.forEach((skill) => {
@@ -38,9 +39,21 @@ const parseResumeText = (rawText) => {
         fullName = lines[0];
     }
     let summary = undefined;
-    const summaryMatch = text.match(/(?:summary|about me|profile|objective)[\s:]*([\s\S]{50,300}?)(?=\n\s*\n|[A-Z][a-z]+:)/i);
+    const summaryMatch = text.match(/(?:summary|about me|profile|objective)[\s:]*([\s\S]{40,350}?)(?=\n\s*\n|[A-Z][a-z]+:)/i);
     if (summaryMatch) {
         summary = summaryMatch[1].trim();
+    }
+    const education = [];
+    if (/bachelor|b\.s\.|b\.e\.|master|m\.s\.|phd|degree|computer science/i.test(text)) {
+        education.push({
+            degree: text.match(/(bachelor|master|phd|b\.s\.|b\.e\.|m\.s\.)[^\n,.]*/i)?.[0] || 'Degree',
+            fieldOfStudy: text.match(/(computer science|software engineering|data science|information technology)/i)?.[0] || 'Tech Field',
+        });
+    }
+    const certifications = [];
+    const certMatches = text.match(/(?:aws certified|google cloud certified|certified kubernetes|oracle certified|hashicorp certified)[^\n,.]*/gi);
+    if (certMatches) {
+        certifications.push(...certMatches.map((c) => c.trim()));
     }
     return {
         personalInfo: {
@@ -55,10 +68,10 @@ const parseResumeText = (rawText) => {
         },
         summary,
         skills: Array.from(new Set(extractedSkills)),
-        education: [],
+        education,
         experience: [],
         projects: [],
-        certifications: [],
+        certifications: Array.from(new Set(certifications)),
         achievements: [],
         languages: [],
     };

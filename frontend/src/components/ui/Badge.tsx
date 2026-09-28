@@ -4,7 +4,7 @@ import React from "react";
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: "sky" | "emerald" | "amber" | "rose" | "purple" | "slate";
+  variant?: "sky" | "cyan" | "emerald" | "amber" | "rose" | "purple" | "slate";
   size?: "sm" | "md";
   icon?: React.ComponentType<{ className?: string }>;
   className?: string;
@@ -19,6 +19,7 @@ export function Badge({
 }: BadgeProps) {
   const variantStyles = {
     sky: "bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/20",
+    cyan: "bg-cyan-500/10 dark:bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
     emerald: "bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     amber: "bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20",
     rose: "bg-rose-500/10 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/20",

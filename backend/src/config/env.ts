@@ -60,6 +60,10 @@ const envSchema = z.object({
   // Gemini AI Provider
   GEMINI_API_KEY: z.string().optional().default(''),
   GEMINI_MODEL: z.string().optional().default('gemini-2.5-flash'),
+
+  // Codeforces Configuration
+  CODEFORCES_API_KEY: z.string().optional().default(''),
+  CODEFORCES_API_SECRET: z.string().optional().default(''),
 });
 
 const parseEnv = () => {

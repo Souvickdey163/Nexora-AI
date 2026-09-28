@@ -464,3 +464,166 @@ Return ONLY a raw JSON object with keys:
             "model": "fallback"
         }
 
+    def generate_assessment_questions(
+        self,
+        category: str,
+        difficulty: str = "INTERMEDIATE",
+        count: int = 10,
+        previous_topics: List[str] = None
+    ) -> List[Dict[str, Any]]:
+        if not self.api_key:
+            raise ValueError("Gemini API key is missing.")
+
+        import google.generativeai as genai
+        import json
+        genai.configure(api_key=self.api_key)
+
+        prev_topics_str = ", ".join(previous_topics) if previous_topics else "None"
+
+        prompt = f"""You are a Senior Computer Science Educator and Technical Examiner.
+Generate {count} unique, high-quality multiple choice diagnostic assessment questions.
+
+Category: "{category}"
+Difficulty Level: "{difficulty}" (Beginner = fundamental concepts; Intermediate = technical interview level; Advanced = deep trade-offs & edge cases)
+Context / Avoid Duplicate Topics: Previously tested topics include [{prev_topics_str}]. Try to cover a diverse range of subtopics within {category}.
+
+REQUIREMENTS FOR EVERY QUESTION:
+1. Must have exactly 4 options.
+2. Must have exactly 1 unambiguous correct answer (index 0, 1, 2, or 3).
+3. Options must be distinct, realistic, and plausible.
+4. Must include a clear technical explanation.
+5. Must include a specific topic tag (e.g., for DBMS: "SQL Joins", "ACID Transactions", "Indexing", "Normalization"; for DSA: "Binary Trees", "Sorting", "Graph BFS", "Dynamic Programming").
+
+Return ONLY a raw JSON array of objects with this exact structure (no markdown formatting, no text outside JSON):
+[
+  {{
+    "category": "{category}",
+    "topic": "Specific Topic Name",
+    "difficulty": "{difficulty}",
+    "questionText": "Clear, precise technical question statement...",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctOptionIndex": 1,
+    "explanation": "Detailed explanation of why Option B is correct..."
+  }}
+]
+"""
+        models_to_try = [self.model_name, "gemini-3.6-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+        for model_name in models_to_try:
+            try:
+                logger.info(f"🤖 Generating {count} assessment MCQs for '{category}' ({difficulty}) via '{model_name}'")
+                model = genai.GenerativeModel(model_name=model_name)
+                response = model.generate_content(prompt)
+                
+                if response and response.text:
+                    txt = response.text.strip()
+                    if txt.startswith("```json"):
+                        txt = txt[7:]
+                    if txt.startswith("```"):
+                        txt = txt[3:]
+                    if txt.endswith("```"):
+                        txt = txt[:-3]
+                    
+                    parsed = json.loads(txt.strip())
+                    if isinstance(parsed, list) and len(parsed) > 0:
+                        validated = []
+                        for idx, q in enumerate(parsed):
+                            if (
+                                isinstance(q, dict) and
+                                q.get("questionText") and
+                                isinstance(q.get("options"), list) and
+                                len(q["options"]) == 4 and
+                                isinstance(q.get("correctOptionIndex"), int) and
+                                0 <= q["correctOptionIndex"] <= 3
+                            ):
+                                validated.append({
+                                    "id": f"q_gen_{idx + 1}_{os.urandom(4).hex()}",
+                                    "category": q.get("category", category),
+                                    "topic": q.get("topic", "General CS"),
+                                    "difficulty": q.get("difficulty", difficulty),
+                                    "questionText": q["questionText"].strip(),
+                                    "options": [opt.strip() for opt in q["options"]],
+                                    "correctOptionIndex": q["correctOptionIndex"],
+                                    "explanation": q.get("explanation", "Option evaluation completed.").strip()
+                                })
+                        if len(validated) >= count // 2:
+                            logger.info(f"✅ Validated {len(validated)} generated questions from {model_name}")
+                            return validated
+            except Exception as err:
+                logger.warning(f"⚠️ Assessment MCQ generation failed with {model_name}: {str(err)}")
+
+        raise ValueError(f"Failed to generate valid assessment questions for category {category}")
+
+    def explain_assessment_result(
+        self,
+        category: str,
+        difficulty: str,
+        score: int,
+        correct_count: int,
+        total_questions: int,
+        strengths: List[str],
+        weaknesses: List[str],
+        topic_analysis: Dict[str, Any] = None,
+        timing_analysis: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
+        if not self.api_key:
+            return {
+                "summary": f"Assessment completed in {category} ({difficulty}). Final score: {score}%.",
+                "strengths": strengths or ["Demonstrated domain knowledge"],
+                "weaknesses": weaknesses or ["Review incorrect topic areas"],
+                "recommendedNextSteps": ["Practice weak topics and retake assessment"],
+                "suggestedStudyTopics": weaknesses or [category]
+            }
+
+        import google.generativeai as genai
+        import json
+        genai.configure(api_key=self.api_key)
+
+        prompt = f"""You are a Computer Science Mentor analyzing an already calculated diagnostic assessment result.
+
+IMPORTANT: Do NOT alter or calculate the raw score. The candidate scored {score}% ({correct_count}/{total_questions} correct).
+
+Assessment Metadata:
+- Category: {category}
+- Difficulty: {difficulty}
+- Score: {score}% ({correct_count}/{total_questions} correct)
+- Strong Topics: {strengths}
+- Weak Topics: {weaknesses}
+- Topic Analysis: {json.dumps(topic_analysis or {})}
+- Timing Analysis: {json.dumps(timing_analysis or {})}
+
+Provide a professional, encouraging, and actionable assessment report.
+
+Return ONLY a raw JSON object with this exact structure:
+{{
+  "summary": "2-3 concise sentences summarizing the overall domain performance and key takeaway.",
+  "strengths": ["Clear list of 2-4 verified strengths"],
+  "weaknesses": ["Clear list of 2-4 identified weak areas"],
+  "recommendedNextSteps": ["Actionable step 1", "Actionable step 2", "Actionable step 3"],
+  "suggestedStudyTopics": ["Specific topic 1", "Specific topic 2"]
+}}
+"""
+        try:
+            model = genai.GenerativeModel(model_name=self.model_name)
+            response = model.generate_content(prompt)
+            if response and response.text:
+                txt = response.text.strip()
+                if txt.startswith("```json"): txt = txt[7:]
+                if txt.startswith("```"): txt = txt[3:]
+                if txt.endswith("```"): txt = txt[:-3]
+                return json.loads(txt.strip())
+        except Exception as e:
+            logger.warning(f"⚠️ Result explanation AI generation failed: {str(e)}")
+
+        return {
+            "summary": f"Assessment completed in {category} at {difficulty} level. You scored {score}% ({correct_count}/{total_questions} correct).",
+            "strengths": strengths or ["Demonstrated fundamental domain understanding"],
+            "weaknesses": weaknesses or ["Review identified weak subtopics"],
+            "recommendedNextSteps": [
+                f"Review foundational concepts in {category}",
+                "Practice topic-specific practice questions",
+                "Retake the diagnostic assessment to verify score improvement"
+            ],
+            "suggestedStudyTopics": weaknesses if weaknesses else [category]
+        }
+
+

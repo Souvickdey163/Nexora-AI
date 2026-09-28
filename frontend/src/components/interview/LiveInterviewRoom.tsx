@@ -157,7 +157,7 @@ export const LiveInterviewRoom: React.FC<LiveInterviewRoomProps> = ({ interview:
     const canvas = document.createElement('canvas');
     canvas.width = 64;
     canvas.height = 64;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
     const interval = setInterval(() => {
       if (!videoRef.current || videoRef.current.paused || videoRef.current.ended) return;
@@ -217,8 +217,8 @@ export const LiveInterviewRoom: React.FC<LiveInterviewRoomProps> = ({ interview:
   const startCameraAndMic = async () => {
     setRoomError(null);
     try {
-      // Trigger Automatic Fullscreen on Start
-      if (document.documentElement.requestFullscreen) {
+      // Trigger Automatic Fullscreen on Start if supported & permitted
+      if (typeof window !== 'undefined' && document.documentElement.requestFullscreen && !document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
       }
 
@@ -233,21 +233,51 @@ export const LiveInterviewRoom: React.FC<LiveInterviewRoomProps> = ({ interview:
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(() => {});
       }
 
-      // Start MediaRecorder for Video Archive
-      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8,opus' });
+      // Safe MediaRecorder initialization for Video Archive
+      const candidateMimeTypes = [
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp8,opus',
+        'video/webm',
+        'video/mp4',
+        '',
+      ];
+
+      let recorder: MediaRecorder | null = null;
       recordedChunksRef.current = [];
 
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          recordedChunksRef.current.push(event.data);
-        }
-      };
+      for (const mime of candidateMimeTypes) {
+        try {
+          const options = mime && typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(mime)
+            ? { mimeType: mime }
+            : undefined;
 
-      recorder.start(1000);
-      mediaRecorderRef.current = recorder;
-      setIsRecording(true);
+          const rec = options ? new MediaRecorder(stream, options) : new MediaRecorder(stream);
+          rec.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+              recordedChunksRef.current.push(event.data);
+            }
+          };
+
+          try {
+            rec.start(1000);
+          } catch (startErr) {
+            rec.start();
+          }
+
+          recorder = rec;
+          break;
+        } catch (e) {
+          // Try next format option
+        }
+      }
+
+      if (recorder) {
+        mediaRecorderRef.current = recorder;
+        setIsRecording(true);
+      }
 
       // Start Web Speech API Recognition
       startSpeechRecognition();

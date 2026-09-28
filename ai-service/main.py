@@ -15,6 +15,11 @@ from schemas.interview_schema import (
     InterviewFinalReportRequest, InterviewFinalReportResponse
 )
 from schemas.github_schema import GitHubAnalyzeRequest, GitHubAnalyzeResponse
+from schemas.assessment_schema import (
+    AssessmentGenerateRequest, AssessmentGenerateResponse,
+    AssessmentExplainRequest, AssessmentExplainResponse,
+    AssessmentQuestionItem
+)
 from services.ai_analyzer import ai_analyzer
 from providers.gemini_provider import GeminiProvider, GeminiQuotaExceededError
 
@@ -265,6 +270,71 @@ def analyze_github_repository(request: GitHubAnalyzeRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"GitHub repository AI analysis failed: {str(e)}"
+        )
+
+@app.post("/api/ai/assessment/generate-questions", response_model=AssessmentGenerateResponse)
+def generate_assessment_questions(request: AssessmentGenerateRequest):
+    try:
+        raw_questions = gemini_provider.generate_assessment_questions(
+            category=request.category,
+            difficulty=request.difficulty,
+            count=request.count,
+            previous_topics=request.previousTopics or []
+        )
+        
+        items = [
+            AssessmentQuestionItem(
+                category=q.get("category", request.category),
+                topic=q.get("topic", "General CS"),
+                difficulty=q.get("difficulty", request.difficulty),
+                questionText=q["questionText"],
+                options=q["options"],
+                correctOptionIndex=q["correctOptionIndex"],
+                explanation=q["explanation"]
+            )
+            for q in raw_questions
+        ]
+
+        return AssessmentGenerateResponse(
+            questions=items,
+            provider="gemini",
+            model="gemini-2.5-flash"
+        )
+    except Exception as e:
+        logger.error(f"Error generating assessment questions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate assessment questions: {str(e)}"
+        )
+
+@app.post("/api/ai/assessment/explain-result", response_model=AssessmentExplainResponse)
+def explain_assessment_result(request: AssessmentExplainRequest):
+    try:
+        result = gemini_provider.explain_assessment_result(
+            category=request.category,
+            difficulty=request.difficulty,
+            score=request.score,
+            correct_count=request.correctCount,
+            total_questions=request.totalQuestions,
+            strengths=request.strengths or [],
+            weaknesses=request.weaknesses or [],
+            topic_analysis=request.topicAnalysis or {},
+            timing_analysis=request.timingAnalysis or {}
+        )
+
+        return AssessmentExplainResponse(
+            summary=result.get("summary", f"Scored {request.score}% in {request.category} ({request.difficulty})."),
+            strengths=result.get("strengths", request.strengths or ["Solid fundamentals"]),
+            weaknesses=result.get("weaknesses", request.weaknesses or ["Review missed topics"]),
+            recommendedNextSteps=result.get("recommendedNextSteps", ["Study key topics", "Retake test"]),
+            suggestedStudyTopics=result.get("suggestedStudyTopics", request.weaknesses or [request.category]),
+            model="gemini-2.5-flash"
+        )
+    except Exception as e:
+        logger.error(f"Error explaining assessment result: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to explain assessment result: {str(e)}"
         )
 
 if __name__ == "__main__":

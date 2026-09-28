@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resumeController = exports.ResumeController = void 0;
 const resume_service_1 = require("../services/resume.service");
@@ -133,6 +166,9 @@ class ResumeController {
             const userId = req.user.userId;
             const { resumeId, versionId } = req.params;
             const dto = req.body;
+            const { creditService } = await Promise.resolve().then(() => __importStar(require('../services/credit.service')));
+            const { CREDIT_COSTS } = await Promise.resolve().then(() => __importStar(require('../config/creditCosts')));
+            await creditService.deductCredits(userId, CREDIT_COSTS.RESUME_ANALYSIS, 'RESUME_AI', 'Resume AI Intelligence Analysis');
             const analysis = await resume_service_1.resumeService.analyzeVersion(userId, resumeId, versionId, dto);
             res.status(200).json({
                 success: true,
@@ -141,6 +177,16 @@ class ResumeController {
             });
         }
         catch (err) {
+            if (err.code === 'INSUFFICIENT_CREDITS') {
+                res.status(402).json({
+                    success: false,
+                    error: err.message,
+                    code: 'INSUFFICIENT_CREDITS',
+                    requiredCredits: err.requiredCredits,
+                    currentCredits: err.currentCredits,
+                });
+                return;
+            }
             next(err);
         }
     }

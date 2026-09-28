@@ -112,7 +112,10 @@ describe('Placement Intelligence End-to-End Test Suite', () => {
   });
 
   afterAll(async () => {
-    // Cleanup created users
+    // Cleanup created users and test problems
+    await prisma.codingProblem.deleteMany({
+      where: { slug: { startsWith: 'prob_placement_' } },
+    });
     await prisma.user.deleteMany({
       where: { id: { in: [userA.id, userB.id] } },
     });

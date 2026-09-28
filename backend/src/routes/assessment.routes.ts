@@ -10,9 +10,19 @@ router.get('/categories', (req, res, next) => assessmentController.getCategories
 // Authenticated assessment flow
 router.use(authenticateToken);
 
+router.get('/active', (req, res, next) => assessmentController.getActiveSession(req, res, next));
 router.get('/questions', (req, res, next) => assessmentController.startAssessment(req, res, next));
 router.post('/start', (req, res, next) => assessmentController.startAssessment(req, res, next));
+
+router.post('/:assessmentId/answers', (req, res, next) => assessmentController.saveAnswer(req, res, next));
+router.post('/:assessmentId/integrity-event', (req, res, next) => assessmentController.logIntegrityEvent(req, res, next));
+router.post('/:assessmentId/submit', (req, res, next) => assessmentController.submitAssessment(req, res, next));
+
+// Legacy submit compatibility route
 router.post('/submit', (req, res, next) => assessmentController.submitAssessment(req, res, next));
+
 router.get('/history', (req, res, next) => assessmentController.getHistory(req, res, next));
+router.get('/analytics', (req, res, next) => assessmentController.getAnalytics(req, res, next));
+router.get('/:assessmentId/result', (req, res, next) => assessmentController.getResult(req, res, next));
 
 export default router;

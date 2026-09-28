@@ -447,6 +447,22 @@ export default function ProblemSolvingPage({ params }: { params: Promise<{ probl
                     {problem.description}
                   </div>
 
+                  {/* Function Signature Guide */}
+                  {problem.starterCode && (
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-sky-400 flex items-center gap-1.5">
+                          <FileCode className="w-3.5 h-3.5 text-sky-400" />
+                          <span>Starter Method Signature ({selectedLanguage.toUpperCase()})</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">Implement method parameters & return value</span>
+                      </div>
+                      <pre className="text-xs font-mono text-emerald-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 overflow-x-auto whitespace-pre">
+                        {problem.starterCode[selectedLanguage] || problem.starterCode["python"] || "// Implement solution"}
+                      </pre>
+                    </div>
+                  )}
+
                   {/* Examples */}
                   {problem.examples && Array.isArray(problem.examples) && problem.examples.length > 0 && (
                     <div className="space-y-3 pt-2">
@@ -647,11 +663,15 @@ export default function ProblemSolvingPage({ params }: { params: Promise<{ probl
             <GlassCard className="p-0 overflow-hidden flex flex-col">
               {/* Editor Header Bar */}
               <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-100/90 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                    <FileCode className="w-3.5 h-3.5" />
+                    <span>&lt;/&gt; Code</span>
+                  </div>
                   <select
                     value={selectedLanguage}
                     onChange={(e) => handleLanguageChange(e.target.value)}
-                    className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    className="px-3 py-1 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm"
                   >
                     {problem.supportedLanguages.map((lang) => (
                       <option key={lang} value={lang.toLowerCase()}>

@@ -94,7 +94,7 @@ export class AnalyticsService {
         communication: i.communicationScore || 0,
       })),
       assessmentTrends: assessmentAttempts.map((a) => ({
-        date: new Date(a.completedAt).toLocaleDateString(),
+        date: a.completedAt ? new Date(a.completedAt).toLocaleDateString() : new Date().toLocaleDateString(),
         category: a.category,
         accuracy: a.accuracyPct,
       })),

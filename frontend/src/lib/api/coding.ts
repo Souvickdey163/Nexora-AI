@@ -63,6 +63,11 @@ export interface CodingProblemDTO {
   timeLimitMs: number;
   memoryLimitMb: number;
   userStatus?: 'SOLVED' | 'ATTEMPTED' | 'NOT_STARTED';
+  rating?: number | null;
+  solvedCount?: number | null;
+  officialUrl?: string;
+  contestId?: number;
+  index?: string;
   testCases?: Array<{
     id: string;
     input: string;
@@ -70,6 +75,37 @@ export interface CodingProblemDTO {
     isHidden: boolean;
     explanation?: string;
   }>;
+}
+
+export interface CodeforcesProblemDTO {
+  id: string;
+  contestId: number;
+  index: string;
+  name: string;
+  type: string;
+  rating?: number | null;
+  points?: number | null;
+  tags: string[];
+  solvedCount?: number | null;
+  officialUrl: string;
+  source: 'CODEFORCES';
+}
+
+export interface CodeforcesContestDTO {
+  id: number;
+  name: string;
+  type: string;
+  phase: string;
+  durationSeconds: number;
+  startTimeSeconds?: number | null;
+  relativeTimeSeconds?: number | null;
+  officialUrl: string;
+}
+
+export interface CodeforcesDailyDTO {
+  date: string;
+  problem: CodeforcesProblemDTO;
+  isPersonalized: boolean;
 }
 
 export interface ListProblemsResponse {
@@ -149,13 +185,14 @@ export interface CodingSubmissionHistoryItem {
 }
 
 export const codingApi = {
-  // List problems with search, filtering, and pagination
+  // List problems with search, filtering, source, and pagination
   async listProblems(params?: {
     search?: string;
     difficulty?: string;
     topic?: string;
     language?: string;
     status?: string;
+    source?: string;
     page?: number;
     limit?: number;
   }) {
@@ -165,11 +202,49 @@ export const codingApi = {
     if (params?.topic && params.topic !== 'ALL') query.append('topic', params.topic);
     if (params?.language && params.language !== 'ALL') query.append('language', params.language);
     if (params?.status && params.status !== 'ALL') query.append('status', params.status);
+    if (params?.source && params.source !== 'ALL') query.append('source', params.source);
     if (params?.page) query.append('page', params.page.toString());
     if (params?.limit) query.append('limit', params.limit.toString());
 
     const queryString = query.toString() ? `?${query.toString()}` : '';
     return fetchCodingApi<ListProblemsResponse>(`/problems${queryString}`);
+  },
+
+  // Get Codeforces direct problemset
+  async getCodeforcesProblems(params?: {
+    search?: string;
+    rating?: number;
+    tag?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.rating) query.append('rating', params.rating.toString());
+    if (params?.tag && params.tag !== 'ALL') query.append('tag', params.tag);
+    if (params?.page) query.append('page', params.page.toString());
+    if (params?.limit) query.append('limit', params.limit.toString());
+
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+    return fetchCodingApi<{
+      problems: CodeforcesProblemDTO[];
+      total: number;
+      page: number;
+      totalPages: number;
+    }>(`/codeforces/problems${queryString}`);
+  },
+
+  // Get Codeforces Daily Challenge
+  async getCodeforcesDaily() {
+    return fetchCodingApi<CodeforcesDailyDTO>('/codeforces/daily');
+  },
+
+  // Get Codeforces Upcoming Contests
+  async getCodeforcesContests() {
+    return fetchCodingApi<{
+      contests: CodeforcesContestDTO[];
+      total: number;
+    }>('/codeforces/contests');
   },
 
   // Get problem by ID or slug

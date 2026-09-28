@@ -117,21 +117,36 @@ export const InterviewRoom: React.FC<InterviewRoomProps> = ({ interview: initial
 
   // Attach Stream to Video Tag & Start Recording + Automatic Fullscreen
   useEffect(() => {
-    // Trigger Automatic Fullscreen on Room Mount
-    if (typeof window !== 'undefined' && document.documentElement.requestFullscreen) {
+    // Trigger Automatic Fullscreen on Room Mount if supported & permitted
+    if (typeof window !== 'undefined' && document.documentElement.requestFullscreen && !document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
     }
 
-    if (stream) {
-      mediaStreamRef.current = stream;
-      setMediaStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+    let isMounted = true;
+
+    const initSessionMedia = async () => {
+      let activeStream = stream;
+
+      if (!activeStream || !activeStream.active || activeStream.getVideoTracks().length === 0) {
+        try {
+          activeStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        } catch (e) {
+          console.warn('Could not acquire webcam stream inside InterviewRoom:', e);
+        }
       }
 
-      // Initialize MediaRecorder for Video Archiving
-      try {
-        let recorder: MediaRecorder | null = null;
+      if (!isMounted || !activeStream) return;
+
+      mediaStreamRef.current = activeStream;
+      setMediaStream(activeStream);
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = activeStream;
+        videoRef.current.play().catch(() => {});
+      }
+
+      // Initialize MediaRecorder for Video Archiving safely
+      if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
         const candidateMimeTypes = [
           'video/webm;codecs=vp9,opus',
           'video/webm;codecs=vp8,opus',
@@ -140,39 +155,63 @@ export const InterviewRoom: React.FC<InterviewRoomProps> = ({ interview: initial
           '',
         ];
 
+        let recorder: MediaRecorder | null = null;
+        recordedChunksRef.current = [];
+
         for (const mime of candidateMimeTypes) {
           try {
-            if (!mime || (typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(mime))) {
-              recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-              if (recorder) break;
+            const options = mime && typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(mime)
+              ? { mimeType: mime }
+              : undefined;
+
+            const rec = options ? new MediaRecorder(activeStream, options) : new MediaRecorder(activeStream);
+            rec.ondataavailable = (e) => {
+              if (e.data && e.data.size > 0) {
+                recordedChunksRef.current.push(e.data);
+              }
+            };
+
+            try {
+              rec.start(1000);
+            } catch (startErr) {
+              rec.start();
             }
-          } catch (e) {}
+
+            recorder = rec;
+            break;
+          } catch (e) {
+            // Try next format option
+          }
         }
 
         if (recorder) {
-          recordedChunksRef.current = [];
-          recorder.ondataavailable = (e) => {
-            if (e.data.size > 0) recordedChunksRef.current.push(e.data);
-          };
-
-          try {
-            recorder.start(1000);
-            mediaRecorderRef.current = recorder;
-            setIsRecording(true);
-            interviewApi.logEvent(interview.id, 'RECORDING_STARTED', 'Video & audio recording initialized.');
-          } catch (e) {
-            console.warn('MediaRecorder start notice:', e);
-          }
+          mediaRecorderRef.current = recorder;
+          setIsRecording(true);
+          interviewApi.logEvent(interview.id, 'RECORDING_STARTED', 'Video & audio recording initialized.');
         }
-      } catch (err: any) {
-        console.warn('MediaRecorder error:', err);
       }
-    }
+    };
+
+    initSessionMedia();
 
     // Check initial Fullscreen status
     setIsFullscreen(!!document.fullscreenElement);
     interviewApi.logEvent(interview.id, 'INTERVIEW_STARTED', `Interview room launched for ${interview.targetRole}`);
+
+    return () => {
+      isMounted = false;
+    };
   }, [stream, interview.id, interview.targetRole]);
+
+  // Keep videoRef.srcObject synced whenever video tag mounts or mediaStream changes
+  useEffect(() => {
+    if (videoRef.current && mediaStream) {
+      if (videoRef.current.srcObject !== mediaStream) {
+        videoRef.current.srcObject = mediaStream;
+      }
+      videoRef.current.play().catch(() => {});
+    }
+  }, [mediaStream]);
 
   // Dynamic Canvas Frame Analyzer for Face Visibility & Camera Feed Light
   useEffect(() => {
@@ -189,7 +228,7 @@ export const InterviewRoom: React.FC<InterviewRoomProps> = ({ interview: initial
     const canvas = document.createElement('canvas');
     canvas.width = 64;
     canvas.height = 64;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
     const interval = setInterval(() => {
       if (!videoRef.current || videoRef.current.paused || videoRef.current.ended) return;

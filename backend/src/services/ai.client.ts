@@ -712,6 +712,137 @@ STRICT RULES:
       roleSpecificAdvice,
     };
   }
+
+  public async generateAssessmentQuestions(
+    category: string,
+    difficulty: string = 'INTERMEDIATE',
+    count: number = 10,
+    previousTopics: string[] = []
+  ): Promise<Array<{
+    category: string;
+    topic: string;
+    difficulty: string;
+    questionText: string;
+    options: string[];
+    correctOptionIndex: number;
+    explanation: string;
+  }> | null> {
+    logger.info(`🤖 Dispatching Assessment Question Generation | Category: ${category} | Difficulty: ${difficulty} | Count: ${count}`);
+
+    try {
+      const response = await fetch(`${this.serviceUrl}/api/ai/assessment/generate-questions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(10000),
+        body: JSON.stringify({ category, difficulty, count, previousTopics }),
+      });
+
+      if (response.ok) {
+        const data = (await response.json()) as any;
+        if (data.questions && Array.isArray(data.questions) && data.questions.length > 0) {
+          logger.info(`✅ Generated ${data.questions.length} questions via FastAPI AI Microservice`);
+          return data.questions;
+        }
+      }
+    } catch (err: any) {
+      logger.warn(`⚠️ Microservice assessment question generation failed (${err.message}). Trying direct Gemini API or DB fallback.`);
+    }
+
+    const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      try {
+        const prompt = `Generate ${count} unique, high-quality multiple choice diagnostic assessment questions.
+Category: "${category}"
+Difficulty Level: "${difficulty}"
+Avoid duplicate topics: [${previousTopics.join(', ')}]
+
+Return ONLY a raw JSON array of objects with this exact structure:
+[
+  {
+    "category": "${category}",
+    "topic": "Specific Topic Name",
+    "difficulty": "${difficulty}",
+    "questionText": "Clear technical question...",
+    "options": ["Opt A", "Opt B", "Opt C", "Opt D"],
+    "correctOptionIndex": 1,
+    "explanation": "Detailed explanation..."
+  }
+]`;
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL || 'gemini-2.5-flash'}:generateContent?key=${apiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(8000),
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: 'application/json', temperature: 0.7 },
+          }),
+        });
+
+        if (res.ok) {
+          const resJson = (await res.json()) as any;
+          const text = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            const cleanText = text.replace(/```json|```/g, '').trim();
+            const parsed = JSON.parse(cleanText);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              return parsed;
+            }
+          }
+        }
+      } catch (err: any) {
+        logger.warn(`⚠️ Direct Gemini assessment question generation failed (${err.message})`);
+      }
+    }
+
+    return null;
+  }
+
+  public async explainAssessmentResult(data: {
+    category: string;
+    difficulty: string;
+    score: number;
+    correctCount: number;
+    totalQuestions: number;
+    strengths: string[];
+    weaknesses: string[];
+    topicAnalysis?: any;
+    timingAnalysis?: any;
+  }): Promise<{
+    summary: string;
+    strengths: string[];
+    weaknesses: string[];
+    recommendedNextSteps: string[];
+    suggestedStudyTopics: string[];
+  }> {
+    try {
+      const response = await fetch(`${this.serviceUrl}/api/ai/assessment/explain-result`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(6000),
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        return (await response.json()) as any;
+      }
+    } catch (err: any) {
+      logger.warn(`⚠️ Microservice assessment explanation failed (${err.message})`);
+    }
+
+    return {
+      summary: `Completed ${data.category} (${data.difficulty}) assessment. You scored ${data.score}% (${data.correctCount}/${data.totalQuestions} correct).`,
+      strengths: data.strengths.length > 0 ? data.strengths : ['Demonstrated domain knowledge'],
+      weaknesses: data.weaknesses.length > 0 ? data.weaknesses : ['Review missed subtopics'],
+      recommendedNextSteps: [
+        `Review core concepts in ${data.category}`,
+        'Practice topic-specific practice questions',
+        'Retake diagnostic assessment to verify progress',
+      ],
+      suggestedStudyTopics: data.weaknesses.length > 0 ? data.weaknesses : [data.category],
+    };
+  }
 }
 
 export const aiClient = new AIClientService();

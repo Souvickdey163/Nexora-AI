@@ -37,6 +37,17 @@ const envSchema = zod_1.z.object({
     RESUME_MAX_FILE_SIZE_MB: zod_1.z.string().transform((val) => parseInt(val, 10)).default('10'),
     AI_SERVICE_URL: zod_1.z.string().default('http://localhost:8000'),
     RESUME_ANALYSIS_RATE_LIMIT: zod_1.z.string().transform((val) => parseInt(val, 10)).default('10'),
+    MENTOR_MAX_MESSAGE_LENGTH: zod_1.z.string().transform((val) => parseInt(val, 10)).default('4000'),
+    MENTOR_MAX_CONTEXT_MESSAGES: zod_1.z.string().transform((val) => parseInt(val, 10)).default('20'),
+    MENTOR_DAILY_MESSAGE_LIMIT: zod_1.z.string().transform((val) => parseInt(val, 10)).default('20'),
+    MENTOR_RATE_LIMIT_PER_MINUTE: zod_1.z.string().transform((val) => parseInt(val, 10)).default('10'),
+    RAZORPAY_KEY_ID: zod_1.z.string().optional().default('rzp_test_mockkeyid123'),
+    RAZORPAY_KEY_SECRET: zod_1.z.string().optional().default('rzp_test_mocksecret123'),
+    RAZORPAY_WEBHOOK_SECRET: zod_1.z.string().optional().default('whsec_test_mocksecret123'),
+    GEMINI_API_KEY: zod_1.z.string().optional().default(''),
+    GEMINI_MODEL: zod_1.z.string().optional().default('gemini-2.5-flash'),
+    CODEFORCES_API_KEY: zod_1.z.string().optional().default(''),
+    CODEFORCES_API_SECRET: zod_1.z.string().optional().default(''),
 });
 const parseEnv = () => {
     const result = envSchema.safeParse(process.env);

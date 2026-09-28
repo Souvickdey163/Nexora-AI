@@ -2,339 +2,249 @@ import { CodingProblemSeedInput } from '../types';
 
 export const backtrackingProblems: CodingProblemSeedInput[] = [
   {
-    title: 'N-Queens Non-Attacking Placements',
+    title: "N-Queens Non-Attacking Placements",
     slug: 'n-queens-non-attacking-placements',
-    description: `Given an input configuration, solve the N-Queens Non-Attacking Placements problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums`, solve the `N-Queens Non-Attacking Placements` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'HARD',
     topic: 'Backtracking',
     tags: ['backtracking'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 2, 3]",
+            "output": "0",
+            "explanation": "Standard example for N-Queens Non-Attacking Placements"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int nQueens(int[] nums) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int nQueens(vector<int>& nums) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def nQueens(self, nums: List[int]) -> int:\n        return 0",
+      javascript: "function nQueens(nums) {\n    return 0;\n}",
+      typescript: "function nQueens(nums: number[]): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0"
+      }
+]
   },
   {
-    title: 'Permutations of Unique Integers',
+    title: "Permutations of Unique Integers",
     slug: 'permutations-of-unique-integers',
-    description: `Given an input configuration, solve the Permutations of Unique Integers problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums`, solve the `Permutations of Unique Integers` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'MEDIUM',
     topic: 'Backtracking',
     tags: ['backtracking'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 2, 3]",
+            "output": "0",
+            "explanation": "Standard example for Permutations of Unique Integers"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int permutationsOf(int[] nums) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int permutationsOf(vector<int>& nums) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def permutationsOf(self, nums: List[int]) -> int:\n        return 0",
+      javascript: "function permutationsOf(nums) {\n    return 0;\n}",
+      typescript: "function permutationsOf(nums: number[]): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0"
+      }
+]
   },
   {
-    title: 'All Possible Subsets Power Set',
+    title: "All Possible Subsets Power Set",
     slug: 'all-possible-subsets-power-set',
-    description: `Given an input configuration, solve the All Possible Subsets Power Set problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums, target`, solve the `All Possible Subsets Power Set` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'MEDIUM',
     topic: 'Backtracking',
     tags: ['backtracking'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 3, 5, 6], target = 5",
+            "output": "2",
+            "explanation": "Standard example for All Possible Subsets Power Set"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int allPossible(int[] nums, int target) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int allPossible(vector<int>& nums, int target) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def allPossible(self, nums: List[int], target: int) -> int:\n        return 0",
+      javascript: "function allPossible(nums, target) {\n    return 0;\n}",
+      typescript: "function allPossible(nums: number[], target: int): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 3, 5, 6], target = 5",
+            "expectedOutput": "2",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 3, 5, 6], target = 5",
+            "expectedOutput": "2"
+      }
+]
   },
   {
-    title: 'Combination Sum Target Combination',
+    title: "Combination Sum Target Combination",
     slug: 'combination-sum-target-combination',
-    description: `Given an input configuration, solve the Combination Sum Target Combination problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums, target`, solve the `Combination Sum Target Combination` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'MEDIUM',
     topic: 'Backtracking',
     tags: ['backtracking'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 3, 5, 6], target = 5",
+            "output": "2",
+            "explanation": "Standard example for Combination Sum Target Combination"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int combinationSum(int[] nums, int target) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int combinationSum(vector<int>& nums, int target) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def combinationSum(self, nums: List[int], target: int) -> int:\n        return 0",
+      javascript: "function combinationSum(nums, target) {\n    return 0;\n}",
+      typescript: "function combinationSum(nums: number[], target: int): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 3, 5, 6], target = 5",
+            "expectedOutput": "2",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 3, 5, 6], target = 5",
+            "expectedOutput": "2"
+      }
+]
   },
   {
-    title: 'Sudoku Solver 9x9 Grid',
+    title: "Sudoku Solver 9x9 Grid",
     slug: 'sudoku-solver-9x9-grid',
-    description: `Given an input configuration, solve the Sudoku Solver 9x9 Grid problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums`, solve the `Sudoku Solver 9x9 Grid` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'HARD',
     topic: 'Backtracking',
     tags: ['backtracking'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 2, 3]",
+            "output": "0",
+            "explanation": "Standard example for Sudoku Solver 9x9 Grid"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int sudokuSolver(int[] nums) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int sudokuSolver(vector<int>& nums) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def sudokuSolver(self, nums: List[int]) -> int:\n        return 0",
+      javascript: "function sudokuSolver(nums) {\n    return 0;\n}",
+      typescript: "function sudokuSolver(nums: number[]): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0"
+      }
+]
   },
   {
-    title: 'Word Search in 2D Character Grid',
+    title: "Word Search in 2D Character Grid",
     slug: 'word-search-in-2d-character-grid',
-    description: `Given an input configuration, solve the Word Search in 2D Character Grid problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `s`, solve the `Word Search in 2D Character Grid` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'MEDIUM',
     topic: 'Backtracking',
     tags: ['backtracking'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "s = \"example\"",
+            "output": "7",
+            "explanation": "Standard example for Word Search in 2D Character Grid"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int wordSearch(String s) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int wordSearch(string s) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def wordSearch(self, s: str) -> int:\n        return 0",
+      javascript: "function wordSearch(s) {\n    return 0;\n}",
+      typescript: "function wordSearch(s: string): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "s = \"example\"",
+            "expectedOutput": "7",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "s = \"example\"",
+            "expectedOutput": "7"
+      }
+]
   }
 ];

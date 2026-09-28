@@ -2,6 +2,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -514,6 +515,44 @@ model CodingProgress {
   @@index([isSolved])
 }
 
+model CodeforcesProblem {
+  id          String   @id @default(uuid())
+  contestId   Int
+  index       String
+  name        String
+  type        String   @default("PROGRAMMING")
+  rating      Int?
+  points      Float?
+  tags        String[] @default([])
+  solvedCount Int?
+  officialUrl String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([contestId, index])
+  @@index([contestId])
+  @@index([rating])
+  @@index([name])
+}
+
+model CodeforcesContest {
+  id                  Int      @id
+  name                String
+  type                String   @default("CF")
+  phase               String
+  frozen              Boolean  @default(false)
+  durationSeconds     Int
+  startTimeSeconds    Int?
+  relativeTimeSeconds Int?
+  officialUrl         String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([phase])
+  @@index([startTimeSeconds])
+}
+
+
 // ===================================================
 // GITHUB INTELLIGENCE MODELS
 // ===================================================
@@ -725,8 +764,9 @@ model RoadmapMilestone {
 
 model AssessmentQuestion {
   id                 String   @id @default(uuid())
-  category           String   // DSA, Programming, DBMS, Computer Networks, Operating Systems, OOP, Web Development, System Design
-  difficulty         String   // EASY, MEDIUM, HARD
+  category           String   // DSA, DBMS, OS, NETWORKS, SYSTEM_DESIGN, OOP, Programming, Web Development
+  topic              String   @default("General")
+  difficulty         String   // BEGINNER, INTERMEDIATE, ADVANCED, EASY, MEDIUM, HARD
   questionText       String   @db.Text
   options            String[] @default([])
   correctOptionIndex Int
@@ -734,27 +774,43 @@ model AssessmentQuestion {
   createdAt          DateTime @default(now())
 
   @@index([category])
+  @@index([topic])
   @@index([difficulty])
 }
 
 model SkillAssessmentAttempt {
-  id                 String   @id @default(uuid())
+  id                 String    @id @default(uuid())
   userId             String
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   category           String
-  difficulty         String   @default("MEDIUM")
-  score              Int      @default(0)
-  totalQuestions     Int      @default(10)
-  correctAnswers     Int      @default(0)
-  accuracyPct        Int      @default(0)
-  timeTakenSeconds   Int      @default(0)
-  weakAreas          String[] @default([])
-  recommendations    String[] @default([])
-  questionDetails    Json?    // Array of { questionId, selectedIndex, correctIndex, isCorrect }
-  completedAt        DateTime @default(now())
+  difficulty         String    @default("INTERMEDIATE")
+  status             String    @default("COMPLETED") // STARTED | IN_PROGRESS | SUBMITTED | COMPLETED | ABANDONED | EXPIRED
+  score              Int       @default(0)
+  totalQuestions     Int       @default(10)
+  correctAnswers     Int       @default(0)
+  incorrectAnswers   Int       @default(0)
+  unansweredCount    Int       @default(0)
+  accuracyPct        Int       @default(0)
+  timeTakenSeconds   Int       @default(0)
+  avgTimePerQuestion Int       @default(0)
+  weakAreas          String[]  @default([])
+  recommendations    String[]  @default([])
+  questionsData      Json?     // Stored full questions with correctOptionIndex & explanation for evaluation
+  answersData        Json?     // Stored user answers [{ questionId, selectedOptionIndex, answeredAt, timeSpentSeconds }]
+  domainScores       Json?     // Domain proficiency breakdown
+  topicAnalysis      Json?     // Topic-level breakdown (strengths, weaknesses, accuracy)
+  difficultyAnalysis Json?     // Difficulty-level breakdown
+  timingAnalysis     Json?     // Time performance breakdown
+  aiReport           Json?     // AI-generated result explanation
+  integrityEvents    Json?     // Fullscreen and window focus/blur event log
+  questionDetails    Json?     // Array of { questionId, selectedIndex, correctIndex, isCorrect, topic }
+  startedAt          DateTime  @default(now())
+  expiresAt          DateTime?
+  completedAt        DateTime? @default(now())
 
   @@index([userId])
   @@index([category])
+  @@index([status])
   @@index([completedAt])
 }
 

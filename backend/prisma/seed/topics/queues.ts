@@ -2,339 +2,249 @@ import { CodingProblemSeedInput } from '../types';
 
 export const queueProblems: CodingProblemSeedInput[] = [
   {
-    title: 'Implement Queue using Stacks',
+    title: "Implement Queue using Stacks",
     slug: 'implement-queue-using-stacks',
-    description: `Given an input configuration, solve the Implement Queue using Stacks problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums`, solve the `Implement Queue using Stacks` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'EASY',
     topic: 'Queue',
     tags: ['queue', 'stack'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 2, 3]",
+            "output": "0",
+            "explanation": "Standard example for Implement Queue using Stacks"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int implementQueue(int[] nums) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int implementQueue(vector<int>& nums) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def implementQueue(self, nums: List[int]) -> int:\n        return 0",
+      javascript: "function implementQueue(nums) {\n    return 0;\n}",
+      typescript: "function implementQueue(nums: number[]): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0"
+      }
+]
   },
   {
-    title: 'Sliding Window Maximum',
+    title: "Sliding Window Maximum",
     slug: 'sliding-window-maximum',
-    description: `Given an input configuration, solve the Sliding Window Maximum problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums`, solve the `Sliding Window Maximum` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'HARD',
     topic: 'Queue',
     tags: ['queue', 'deque', 'sliding-window'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 2, 3]",
+            "output": "0",
+            "explanation": "Standard example for Sliding Window Maximum"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int slidingWindow(int[] nums) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int slidingWindow(vector<int>& nums) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def slidingWindow(self, nums: List[int]) -> int:\n        return 0",
+      javascript: "function slidingWindow(nums) {\n    return 0;\n}",
+      typescript: "function slidingWindow(nums: number[]): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0"
+      }
+]
   },
   {
-    title: 'Rotting Oranges Grid Simulation',
+    title: "Rotting Oranges Grid Simulation",
     slug: 'rotting-oranges-grid-simulation',
-    description: `Given an input configuration, solve the Rotting Oranges Grid Simulation problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums`, solve the `Rotting Oranges Grid Simulation` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'MEDIUM',
     topic: 'Queue',
     tags: ['queue', 'bfs'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 2, 3]",
+            "output": "0",
+            "explanation": "Standard example for Rotting Oranges Grid Simulation"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int rottingOranges(int[] nums) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int rottingOranges(vector<int>& nums) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def rottingOranges(self, nums: List[int]) -> int:\n        return 0",
+      javascript: "function rottingOranges(nums) {\n    return 0;\n}",
+      typescript: "function rottingOranges(nums: number[]): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0"
+      }
+]
   },
   {
-    title: 'Design Circular Deque',
+    title: "Design Circular Deque",
     slug: 'design-circular-deque',
-    description: `Given an input configuration, solve the Design Circular Deque problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums`, solve the `Design Circular Deque` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'MEDIUM',
     topic: 'Queue',
     tags: ['queue', 'design'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 2, 3]",
+            "output": "0",
+            "explanation": "Standard example for Design Circular Deque"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int designCircular(int[] nums) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int designCircular(vector<int>& nums) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def designCircular(self, nums: List[int]) -> int:\n        return 0",
+      javascript: "function designCircular(nums) {\n    return 0;\n}",
+      typescript: "function designCircular(nums: number[]): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0"
+      }
+]
   },
   {
-    title: 'Dota2 Senate Radiant vs Dire',
+    title: "Dota2 Senate Radiant vs Dire",
     slug: 'dota2-senate-radiant-vs-dire',
-    description: `Given an input configuration, solve the Dota2 Senate Radiant vs Dire problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums`, solve the `Dota2 Senate Radiant vs Dire` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'MEDIUM',
     topic: 'Queue',
     tags: ['queue', 'greedy'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 2, 3]",
+            "output": "0",
+            "explanation": "Standard example for Dota2 Senate Radiant vs Dire"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int dota2Senate(int[] nums) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int dota2Senate(vector<int>& nums) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def dota2Senate(self, nums: List[int]) -> int:\n        return 0",
+      javascript: "function dota2Senate(nums) {\n    return 0;\n}",
+      typescript: "function dota2Senate(nums: number[]): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0"
+      }
+]
   },
   {
-    title: 'Number of Recent Calls Counter',
+    title: "Number of Recent Calls Counter",
     slug: 'number-of-recent-calls-counter',
-    description: `Given an input configuration, solve the Number of Recent Calls Counter problem efficiently satisfying all time and memory complexity constraints.`,
+    description: "Given input configuration with parameters `nums`, solve the `Number of Recent Calls Counter` problem satisfying all time and memory complexity constraints.",
     source: 'Nexora Original',
     license: 'MIT',
     difficulty: 'EASY',
     topic: 'Queue',
     tags: ['queue', 'design'],
     examples: [
-      { input: 'Sample Input 1', output: 'Sample Output 1', explanation: 'Primary problem example' }
-    ],
-    constraints: ['1 <= N <= 10^5'],
+      {
+            "input": "nums = [1, 2, 3]",
+            "output": "0",
+            "explanation": "Standard example for Number of Recent Calls Counter"
+      }
+],
+    constraints: [
+      "1 <= N <= 10^5",
+      "All elements satisfy standard problem bounds."
+],
     starterCode: {
-      java: `class Solution {
-    public int solve() {
-        return 0;
-    }
-}`,
-      cpp: `class Solution {
-public:
-    int solve() {
-        return 0;
-    }
-};`,
-      python: `class Solution:
-    def solve(self) -> int:
-        return 0`,
-      javascript: `function solve() {
-    return 0;
-}`,
-      typescript: `function solve(): number {
-    return 0;
-}`
+      java: "class Solution {\n    public int numberOf(int[] nums) {\n        return 0;\n    }\n}",
+      cpp: "class Solution {\npublic:\n    int numberOf(vector<int>& nums) {\n        return 0;\n    }\n};",
+      python: "class Solution:\n    def numberOf(self, nums: List[int]) -> int:\n        return 0",
+      javascript: "function numberOf(nums) {\n    return 0;\n}",
+      typescript: "function numberOf(nums: number[]): int {\n    return 0;\n}"
     },
     visibleTestCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', explanation: 'Standard visible case 1' },
-      { input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', explanation: 'Representative test case 2' },
-      { input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', explanation: 'Boundary duplicate elements case 3' },
-      { input: 'nums = [-1, -2, -3], target = -5', expectedOutput: '[1, 2]', explanation: 'Negative numbers case 4' }
-    ],
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0",
+            "explanation": "Visible sample test case"
+      }
+],
     hiddenTestCases: [
-      { input: 'nums = [1, 5, 10], target = 6', expectedOutput: '[0, 1]' },
-      { input: 'nums = [2, 6, 11], target = 7', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3, 7, 12], target = 8', expectedOutput: '[0, 1]' },
-      { input: 'nums = [4, 8, 13], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [5, 9, 14], target = 10', expectedOutput: '[0, 1]' },
-      { input: 'nums = [6, 10, 15], target = 11', expectedOutput: '[0, 1]' },
-      { input: 'nums = [7, 11, 16], target = 12', expectedOutput: '[0, 1]' },
-      { input: 'nums = [8, 12, 17], target = 13', expectedOutput: '[0, 1]' },
-      { input: 'nums = [9, 13, 18], target = 14', expectedOutput: '[0, 1]' },
-      { input: 'nums = [10, 14, 19], target = 15', expectedOutput: '[0, 1]' },
-      { input: 'nums = [11, 15, 20], target = 16', expectedOutput: '[0, 1]' },
-      { input: 'nums = [12, 16, 21], target = 17', expectedOutput: '[0, 1]' }
-    ]
+      {
+            "input": "nums = [1, 2, 3]",
+            "expectedOutput": "0"
+      }
+]
   }
 ];

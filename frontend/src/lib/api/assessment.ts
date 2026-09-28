@@ -26,43 +26,131 @@ async function fetchAssessmentApi<T = any>(endpoint: string, options: RequestIni
 
 export const assessmentApi = {
   async getCategories() {
-    return fetchAssessmentApi<{ success: boolean; categories: Array<{ name: string; questionCount: number; difficulty: string }> }>('/categories', {
+    return fetchAssessmentApi<{
+      success: boolean;
+      categories: Array<{ id: string; name: string; displayName: string; questionCount: number; difficulty: string }>;
+    }>('/categories', {
       method: 'GET',
     });
   },
 
-  async startAssessment(params: { category: string; difficulty?: string } | string, difficultyArg?: string) {
+  async getActiveSession() {
+    return fetchAssessmentApi<{
+      success: boolean;
+      activeSession?: {
+        assessmentId: string;
+        category: string;
+        difficulty: string;
+        status: string;
+        startedAt: string;
+        expiresAt: string;
+        totalQuestions: number;
+        answersData: Array<{ questionId: string; selectedOptionIndex: number; timeSpentSeconds: number }>;
+        questions: Array<{ id: string; category: string; topic: string; difficulty: string; questionText: string; options: string[] }>;
+        integrityEvents: any[];
+      };
+    }>('/active', {
+      method: 'GET',
+    });
+  },
+
+  async startAssessment(params: { category: string; difficulty?: string; questionCount?: number } | string, difficultyArg?: string) {
     const category = typeof params === 'string' ? params : params.category;
-    const difficulty = typeof params === 'string' ? (difficultyArg || 'MEDIUM') : (params.difficulty || 'MEDIUM');
+    const difficulty = typeof params === 'string' ? (difficultyArg || 'INTERMEDIATE') : (params.difficulty || 'INTERMEDIATE');
+    const questionCount = typeof params === 'object' && params.questionCount ? params.questionCount : 10;
 
     return fetchAssessmentApi<{
       success: boolean;
       error?: string;
+      code?: string;
+      requiredCredits?: number;
+      currentCredits?: number;
+      assessmentId?: string;
       attemptId?: string;
       category?: string;
       difficulty?: string;
       totalQuestions?: number;
-      questions?: Array<{ id: string; category: string; difficulty: string; questionText: string; options: string[] }>;
+      startedAt?: string;
+      expiresAt?: string;
+      answersData?: any[];
+      questions?: Array<{ id: string; category: string; topic: string; difficulty: string; questionText: string; options: string[] }>;
     }>('/start', {
       method: 'POST',
-      body: JSON.stringify({ category, difficulty }),
+      body: JSON.stringify({ category, difficulty, questionCount }),
     });
   },
 
-  async submitAssessment(data: {
-    attemptId?: string;
-    category?: string;
-    difficulty?: string;
-    answers: Array<{ questionId: string; selectedOptionIndex?: number; selectedOption?: number }>;
-    timeTakenSeconds?: number;
-  }) {
-    return fetchAssessmentApi<{ success: boolean; error?: string; score?: number; passed?: boolean; result?: any }>('/submit', {
+  async saveAnswer(assessmentId: string, questionId: string, selectedOptionIndex: number, timeSpentSeconds: number = 0) {
+    return fetchAssessmentApi<{ success: boolean; answeredCount?: number; error?: string }>(`/${assessmentId}/answers`, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({ questionId, selectedOptionIndex, timeSpentSeconds }),
+    });
+  },
+
+  async logIntegrityEvent(assessmentId: string, eventType: string, details?: string) {
+    return fetchAssessmentApi<{ success: boolean; eventCount?: number }>(`/${assessmentId}/integrity-event`, {
+      method: 'POST',
+      body: JSON.stringify({ eventType, details }),
+    });
+  },
+
+  async submitAssessment(assessmentIdOrData: string | { attemptId?: string; answers?: any[] }, finalAnswers?: any[]) {
+    let assessmentId: string;
+    let payload: any = {};
+
+    if (typeof assessmentIdOrData === 'string') {
+      assessmentId = assessmentIdOrData;
+      if (finalAnswers) payload.answers = finalAnswers;
+    } else {
+      assessmentId = assessmentIdOrData.attemptId || '';
+      if (assessmentIdOrData.answers) payload.answers = assessmentIdOrData.answers;
+    }
+
+    const endpoint = assessmentId ? `/${assessmentId}/submit` : '/submit';
+
+    return fetchAssessmentApi<{
+      success: boolean;
+      error?: string;
+      score?: number;
+      passed?: boolean;
+      result?: any;
+    }>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async getResult(assessmentId: string) {
+    return fetchAssessmentApi<{
+      success: boolean;
+      error?: string;
+      result?: any;
+    }>(`/${assessmentId}/result`, {
+      method: 'GET',
     });
   },
 
   async getHistory() {
-    return fetchAssessmentApi<{ success: boolean; attempts: any[] }>('/history', { method: 'GET' });
+    return fetchAssessmentApi<{
+      success: boolean;
+      attempts: any[];
+    }>('/history', {
+      method: 'GET',
+    });
+  },
+
+  async getAnalytics() {
+    return fetchAssessmentApi<{
+      success: boolean;
+      analytics?: {
+        totalAssessments: number;
+        averageScore: number;
+        bestCategory: string;
+        domainProficiency: Record<string, number>;
+        categoryTrends: Record<string, Array<{ attemptNumber: number; score: number; date: string }>>;
+      };
+    }>('/analytics', {
+      method: 'GET',
+    });
   },
 };

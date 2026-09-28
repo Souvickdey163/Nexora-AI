@@ -11,7 +11,7 @@ export const submitCodeSchema = z.object({
 });
 
 export const mentorQuerySchema = z.object({
-  problemId: z.string().uuid('Valid problem UUID is required'),
+  problemId: z.string().min(1, 'Problem ID is required'),
   queryType: z.enum([
     'EXPLAIN_PROBLEM',
     'HINT',

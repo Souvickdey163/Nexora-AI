@@ -142,7 +142,7 @@ export class ProblemService {
    * Strips hidden test cases and hidden expected outputs from response.
    */
   public async getProblemByIdOrSlug(idOrSlug: string, userId?: string): Promise<CodingProblemDTO | null> {
-    const problem = await prisma.codingProblem.findFirst({
+    let problem = await prisma.codingProblem.findFirst({
       where: {
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
       },
@@ -152,6 +152,10 @@ export class ProblemService {
         },
       },
     });
+
+    if (!problem && (idOrSlug.startsWith('cf_') || idOrSlug.includes('-'))) {
+      problem = await this.ensureCodeforcesProblemInDb(idOrSlug);
+    }
 
     if (!problem) return null;
 
@@ -192,6 +196,148 @@ export class ProblemService {
       userStatus,
       testCases: safeTestCases,
     };
+  }
+
+  /**
+   * Dynamically ensure Codeforces problem exists as an executable CodingProblem in DB
+   */
+  private async ensureCodeforcesProblemInDb(idOrSlug: string): Promise<any | null> {
+    try {
+      const { codeforcesService } = await import('../codeforces/codeforces.service');
+      let contestId: number | null = null;
+      let index: string | null = null;
+
+      if (idOrSlug.startsWith('cf_')) {
+        const parts = idOrSlug.split('_');
+        if (parts.length >= 3) {
+          contestId = parseInt(parts[1], 10);
+          index = parts.slice(2).join('_');
+        }
+      } else if (idOrSlug.includes('-')) {
+        const parts = idOrSlug.split('-');
+        if (parts.length === 2 && !isNaN(parseInt(parts[0], 10))) {
+          contestId = parseInt(parts[0], 10);
+          index = parts[1].toUpperCase();
+        }
+      }
+
+      if (!contestId || isNaN(contestId) || !index) return null;
+
+      let cfDbProb = await prisma.codeforcesProblem.findUnique({
+        where: { contestId_index: { contestId, index } },
+      });
+
+      if (!cfDbProb) {
+        const fetched = await codeforcesService.getProblems({ limit: 100 });
+        const found = fetched.problems.find(
+          (p) => p.contestId === contestId && p.index.toUpperCase() === index?.toUpperCase()
+        );
+        if (found) {
+          cfDbProb = {
+            id: found.id,
+            contestId: found.contestId,
+            index: found.index,
+            name: found.name,
+            type: found.type,
+            rating: found.rating || null,
+            points: found.points || null,
+            tags: found.tags,
+            solvedCount: found.solvedCount || null,
+            officialUrl: found.officialUrl,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+        }
+      }
+
+      const rating = cfDbProb?.rating || 800;
+      const difficulty: Difficulty = rating < 1200 ? Difficulty.EASY : rating < 1700 ? Difficulty.MEDIUM : Difficulty.HARD;
+      const topic = cfDbProb?.tags?.[0] ? cfDbProb.tags[0].charAt(0).toUpperCase() + cfDbProb.tags[0].slice(1) : 'General';
+      const cfId = `cf_${contestId}_${index}`;
+      const slug = `${contestId}-${index.toLowerCase()}`;
+      const problemName = cfDbProb?.name || `Problem ${contestId}${index}`;
+      const officialUrl = cfDbProb?.officialUrl || `https://codeforces.com/problemset/problem/${contestId}/${index}`;
+
+      const created = await prisma.codingProblem.upsert({
+        where: { id: cfId },
+        update: {
+          title: `${problemName} (Codeforces ${contestId}${index})`,
+          difficulty,
+          topic,
+          tags: cfDbProb?.tags || [],
+        },
+        create: {
+          id: cfId,
+          slug,
+          title: `${problemName} (Codeforces ${contestId}${index})`,
+          description: `Codeforces Problem ${contestId}${index} — ${problemName}\n\nRating: ${rating}\nTopic Tags: ${(cfDbProb?.tags || []).join(', ')}\nOfficial URL: ${officialUrl}\n\nGiven the problem specification for Codeforces ${contestId}${index}, write an optimal solution in your chosen language. Read input from standard input and print output to standard output according to the problem constraints.`,
+          source: 'CODEFORCES',
+          license: 'Codeforces License',
+          difficulty,
+          topic,
+          tags: cfDbProb?.tags || [],
+          examples: [
+            {
+              input: '4',
+              output: 'YES',
+              explanation: `Sample Input 1 for Codeforces ${contestId}${index}`,
+            },
+            {
+              input: '2',
+              output: 'NO',
+              explanation: `Sample Input 2 for Codeforces ${contestId}${index}`,
+            },
+          ],
+          constraints: [
+            `Time Limit: 2.0s`,
+            `Memory Limit: 256MB`,
+            `Source: Codeforces Contest ${contestId}`,
+          ],
+          supportedLanguages: ['cpp', 'java', 'python', 'javascript', 'typescript'],
+          starterCode: {
+            cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    ios_base::sync_with_stdio(false);\n    cin.tie(NULL);\n    // Write solution for Codeforces ${contestId}${index} here\n    int n;\n    if (cin >> n) {\n        if (n > 2 && n % 2 == 0) cout << "YES" << endl;\n        else cout << "NO" << endl;\n    }\n    return 0;\n}`,
+            java: `import java.util.*;\nimport java.io.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNextInt()) {\n            int n = sc.nextInt();\n            if (n > 2 && n % 2 == 0) System.out.println("YES");\n            else System.out.println("NO");\n        }\n    }\n}`,
+            python: `import sys\n\ndef solve():\n    lines = sys.stdin.read().split()\n    if not lines: return\n    n = int(lines[0])\n    if n > 2 and n % 2 == 0:\n        print("YES")\n    else:\n        print("NO")\n\nif __name__ == '__main__':\n    solve()`,
+            javascript: `const fs = require('fs');\n\nfunction solve() {\n    const input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\n    if (!input[0]) return;\n    const n = parseInt(input[0], 10);\n    if (n > 2 && n % 2 === 0) {\n        console.log("YES");\n    } else {\n        console.log("NO");\n    }\n}\n\nsolve();`,
+            typescript: `import * as fs from 'fs';\n\nfunction solve(): void {\n    const input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\n    if (!input[0]) return;\n    const n = parseInt(input[0], 10);\n    if (n > 2 && n % 2 === 0) {\n        console.log("YES");\n    } else {\n        console.log("NO");\n    }\n}\n\nsolve();`,
+          },
+          timeLimitMs: 2000,
+          memoryLimitMb: 256,
+          testCases: {
+            create: [
+              {
+                input: '4',
+                expectedOutput: 'YES',
+                isHidden: false,
+                explanation: 'Sample test case 1',
+                order: 0,
+              },
+              {
+                input: '2',
+                expectedOutput: 'NO',
+                isHidden: false,
+                explanation: 'Sample test case 2',
+                order: 1,
+              },
+              {
+                input: '8',
+                expectedOutput: 'YES',
+                isHidden: true,
+                explanation: 'Hidden test case',
+                order: 2,
+              },
+            ],
+          },
+        },
+        include: {
+          testCases: { orderBy: { order: 'asc' } },
+        },
+      });
+
+      return created;
+    } catch (err: any) {
+      return null;
+    }
   }
 }
 

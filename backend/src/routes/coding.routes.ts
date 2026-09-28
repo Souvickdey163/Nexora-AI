@@ -35,6 +35,16 @@ router.get('/problems/:id', (req, res, next) => {
   return codingController.getProblem(req, res);
 });
 
+// Codeforces Integration Endpoints
+router.get('/codeforces/problems', (req, res) => codingController.getCodeforcesProblems(req, res));
+router.get('/codeforces/daily', (req, res) => {
+  if (req.headers.authorization) {
+    return authenticateToken(req, res, () => codingController.getCodeforcesDaily(req, res));
+  }
+  return codingController.getCodeforcesDaily(req, res);
+});
+router.get('/codeforces/contests', (req, res) => codingController.getCodeforcesContests(req, res));
+
 // Authenticated Endpoints
 router.use(authenticateToken);
 
