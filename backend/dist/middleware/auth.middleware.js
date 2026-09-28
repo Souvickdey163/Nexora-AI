@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authenticateToken = void 0;
+exports.optionalAuthenticateToken = exports.authenticateToken = void 0;
 const token_service_1 = require("../services/token.service");
 const client_1 = require("@prisma/client");
 const authenticateToken = (req, res, next) => {
@@ -34,3 +34,18 @@ const authenticateToken = (req, res, next) => {
     }
 };
 exports.authenticateToken = authenticateToken;
+const optionalAuthenticateToken = (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.split(' ')[1];
+        if (token) {
+            const payload = token_service_1.tokenService.verifyAccessToken(token);
+            req.user = payload;
+            req.accessToken = token;
+        }
+    }
+    catch (err) {
+    }
+    next();
+};
+exports.optionalAuthenticateToken = optionalAuthenticateToken;

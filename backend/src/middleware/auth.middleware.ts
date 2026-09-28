@@ -45,3 +45,22 @@ export const authenticateToken = (
     });
   }
 };
+
+export const optionalAuthenticateToken = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token) {
+      const payload = tokenService.verifyAccessToken(token);
+      req.user = payload;
+      req.accessToken = token;
+    }
+  } catch (err) {
+    // Ignore token errors for optional auth
+  }
+  next();
+};

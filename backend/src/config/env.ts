@@ -64,6 +64,14 @@ const envSchema = z.object({
   // Codeforces Configuration
   CODEFORCES_API_KEY: z.string().optional().default(''),
   CODEFORCES_API_SECRET: z.string().optional().default(''),
+
+  // freeCodeCamp Integration
+  FREECODECAMP_GRAPHQL_URL: z.string().optional().default('https://api.freecodecamp.org/graphql'),
+
+  // Job Data Providers
+  JOBVETTA_API_KEY: z.string().optional().default('jobvetta_secret_key_2026'),
+  ADZUNA_APP_ID: z.string().optional().default('7648c839'),
+  ADZUNA_APP_KEY: z.string().optional().default('9b6f83468b35f2844ded09aaa14ddf5d'),
 });
 
 const parseEnv = () => {

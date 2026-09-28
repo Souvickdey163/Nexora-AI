@@ -1,97 +1,134 @@
 import { prisma } from '../config/database';
-
-const INITIAL_LEARNING_TOPICS = [
-  {
-    slug: 'typescript-deep-dive',
-    title: 'TypeScript & ES6+ Advanced Handbook',
-    category: 'Frontend',
-    difficulty: 'Intermediate',
-    estimatedMinutes: 45,
-    description: 'Master generics, utility types, conditional types, and async execution in modern JavaScript.',
-    resources: [
-      { title: 'TypeScript Official Documentation', url: 'https://www.typescriptlang.org/docs/', type: 'Documentation', isFree: true },
-      { title: 'MDN JavaScript Guide', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide', type: 'Guide', isFree: true },
-    ],
-  },
-  {
-    slug: 'dsa-sliding-window',
-    title: 'Sliding Window & Two Pointer Algorithmic Patterns',
-    category: 'Algorithms',
-    difficulty: 'Intermediate',
-    estimatedMinutes: 60,
-    description: 'Learn step-by-step implementations for fixed & variable length sliding window problems.',
-    resources: [
-      { title: 'NeetCode 150 Roadmap', url: 'https://neetcode.io/roadmap', type: 'Interactive Practice', isFree: true },
-      { title: 'GeeksforGeeks Window Sliding Technique', url: 'https://www.geeksforgeeks.org/window-sliding-technique/', type: 'Tutorial', isFree: true },
-    ],
-  },
-  {
-    slug: 'postgresql-indexing',
-    title: 'PostgreSQL Indexing & Query Execution Performance',
-    category: 'Databases',
-    difficulty: 'Advanced',
-    estimatedMinutes: 50,
-    description: 'Understand B-Tree indexes, EXPLAIN ANALYZE execution plans, and JOIN optimization.',
-    resources: [
-      { title: 'PostgreSQL Official Documentation', url: 'https://www.postgresql.org/docs/current/indexes.html', type: 'Documentation', isFree: true },
-      { title: 'Use The Index, Luke!', url: 'https://use-the-index-luke.com/', type: 'E-Book / Guide', isFree: true },
-    ],
-  },
-  {
-    slug: 'system-design-fundamentals',
-    title: 'System Design Fundamentals: Caching & Load Balancing',
-    category: 'Systems',
-    difficulty: 'Advanced',
-    estimatedMinutes: 90,
-    description: 'Learn horizontal scaling, CDN distribution, Redis caching patterns, and reverse proxies.',
-    resources: [
-      { title: 'System Design Primer', url: 'https://github.com/donnemartin/system-design-primer', type: 'GitHub Repository', isFree: true },
-      { title: 'Cloudflare What Is Load Balancing', url: 'https://www.cloudflare.com/learning/performance/what-is-load-balancing/', type: 'Article', isFree: true },
-    ],
-  },
-];
+import { learningSyncService } from './learning-sync.service';
+import { learningRecommendationService } from './learning-recommendation.service';
+import { LearningResource, LearningResourceQueryParams } from '../types/learning.types';
 
 export class LearningService {
-  async ensureTopics() {
-    const count = await prisma.learningTopic.count();
-    if (count === 0) {
-      for (const t of INITIAL_LEARNING_TOPICS) {
-        await prisma.learningTopic.create({ data: t });
-      }
+  /**
+   * Retrieves resources from PostgreSQL DB, applies filtering, user progress, and personalized recommendations.
+   */
+  async getResources(
+    userId?: string,
+    params: LearningResourceQueryParams = {}
+  ): Promise<{
+    resources: LearningResource[];
+    recommendedForGaps: LearningResource[];
+    missingSkills: string[];
+    targetRole: string | null;
+  }> {
+    // Ensure database is populated with initial synced resources if empty
+    await learningSyncService.ensureSyncedOnStartup();
+
+    // Build database query filter
+    const where: any = {};
+
+    if (params.provider && params.provider.toLowerCase() !== 'all') {
+      where.provider = { equals: params.provider, mode: 'insensitive' };
     }
-  }
 
-  async getTopics(userId: string, category?: string) {
-    await this.ensureTopics();
+    if (params.category && params.category.toLowerCase() !== 'all') {
+      where.category = { equals: params.category, mode: 'insensitive' };
+    }
 
-    const topics = await prisma.learningTopic.findMany({
-      where: category ? { category } : undefined,
-      orderBy: { title: 'asc' },
+    if (params.difficulty && params.difficulty.toLowerCase() !== 'all') {
+      where.difficulty = { equals: params.difficulty, mode: 'insensitive' };
+    }
+
+    if (params.skill) {
+      const s = params.skill.toLowerCase();
+      where.skills = { has: s };
+    }
+
+    if (params.search && params.search.trim() !== '') {
+      const q = params.search.trim();
+      where.OR = [
+        { title: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+        { category: { contains: q, mode: 'insensitive' } },
+        { skills: { has: q.toLowerCase() } },
+      ];
+    }
+
+    // Fetch from PostgreSQL
+    const dbResources = await prisma.learningResource.findMany({
+      where,
+      orderBy:
+        params.sortBy === 'title'
+          ? { title: 'asc' }
+          : params.sortBy === 'category'
+          ? { category: 'asc' }
+          : params.sortBy === 'difficulty'
+          ? { difficulty: 'asc' }
+          : { createdAt: 'desc' },
+      take: params.limit && params.limit > 0 ? params.limit : undefined,
     });
 
-    const userProgresses = await prisma.userLearningProgress.findMany({
-      where: { userId },
-    });
+    // Attach user progress if logged in
+    let userProgressMap = new Map<string, { isCompleted: boolean; isBookmarked: boolean }>();
+    if (userId) {
+      const userProgress = await prisma.userLearningResourceProgress.findMany({
+        where: { userId },
+      });
+      userProgress.forEach((p) => {
+        userProgressMap.set(p.resourceId, {
+          isCompleted: p.isCompleted,
+          isBookmarked: p.isBookmarked,
+        });
+      });
+    }
 
-    const progressMap = new Map(userProgresses.map((p) => [p.topicId, p]));
-
-    return topics.map((t) => {
-      const p = progressMap.get(t.id);
+    const mappedResources: LearningResource[] = dbResources.map((r) => {
+      const p = userProgressMap.get(r.id);
       return {
-        ...t,
+        id: r.id,
+        sourceId: r.sourceId,
+        provider: r.provider,
+        title: r.title,
+        description: r.description || undefined,
+        category: r.category,
+        skills: r.skills,
+        resourceType: r.resourceType as any,
+        url: r.url,
+        difficulty: (r.difficulty as any) || undefined,
         isCompleted: p?.isCompleted ?? false,
         isBookmarked: p?.isBookmarked ?? false,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
       };
     });
+
+    // Run personalized recommendation scoring if user is logged in
+    if (userId) {
+      const rec = await learningRecommendationService.getPersonalizedRecommendations(
+        userId,
+        mappedResources
+      );
+      return {
+        resources: rec.scoredResources,
+        recommendedForGaps: rec.recommendedForGaps,
+        missingSkills: rec.missingSkills,
+        targetRole: rec.targetRole,
+      };
+    }
+
+    return {
+      resources: mappedResources,
+      recommendedForGaps: [],
+      missingSkills: [],
+      targetRole: null,
+    };
   }
 
-  async toggleProgress(
+  /**
+   * Toggles completion / bookmark state for a resource
+   */
+  async toggleResourceProgress(
     userId: string,
-    topicId: string,
+    resourceId: string,
     data: { isCompleted?: boolean; isBookmarked?: boolean }
   ) {
-    const existing = await prisma.userLearningProgress.findUnique({
-      where: { userId_topicId: { userId, topicId } },
+    const existing = await prisma.userLearningResourceProgress.findUnique({
+      where: { userId_resourceId: { userId, resourceId } },
     });
 
     const newCompleted =
@@ -99,11 +136,11 @@ export class LearningService {
     const newBookmarked =
       data.isBookmarked !== undefined ? data.isBookmarked : existing?.isBookmarked ?? false;
 
-    return prisma.userLearningProgress.upsert({
-      where: { userId_topicId: { userId, topicId } },
+    return prisma.userLearningResourceProgress.upsert({
+      where: { userId_resourceId: { userId, resourceId } },
       create: {
         userId,
-        topicId,
+        resourceId,
         isCompleted: newCompleted,
         isBookmarked: newBookmarked,
         completedAt: newCompleted ? new Date() : null,
@@ -114,6 +151,25 @@ export class LearningService {
         completedAt: newCompleted ? new Date() : null,
       },
     });
+  }
+
+  // Legacy getTopics & toggleProgress support for backwards compatibility
+  async getTopics(userId: string, category?: string) {
+    const res = await this.getResources(userId, { category });
+    return res.resources.map((r) => ({
+      ...r,
+      slug: r.sourceId || r.id,
+      estimatedMinutes: 45,
+      resources: [{ title: r.title, url: r.url, type: r.resourceType, isFree: true }],
+    }));
+  }
+
+  async toggleProgress(
+    userId: string,
+    topicId: string,
+    data: { isCompleted?: boolean; isBookmarked?: boolean }
+  ) {
+    return this.toggleResourceProgress(userId, topicId, data);
   }
 }
 

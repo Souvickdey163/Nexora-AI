@@ -1,22 +1,22 @@
 import { Metadata } from "next";
 import { FeatureLayout } from "@/components/layout/FeatureLayout";
-import { CareerAnalyticsWorkspace } from "@/components/analytics/CareerAnalyticsWorkspace";
+import { JobOpportunitiesWorkspace } from "@/components/jobs/JobOpportunitiesWorkspace";
 
 export const metadata: Metadata = {
-  title: "Career Analytics & Performance Tracking | Nexora AI",
+  title: "Job Opportunities & Career Matching | Nexora AI",
   description:
-    "Track your unified career readiness index, coding velocity, mock interview scoring curves, and skill proficiency heatmaps.",
+    "Discover relevant job openings based on your resume, skills, target role, experience, and preferred location.",
 };
 
 export default function AnalyticsPage() {
   return (
     <FeatureLayout
-      featureId="career-analytics"
-      title="Career Analytics"
-      subtitle="Track your coding velocity, interview progress, resume health, and overall career readiness in one unified dashboard."
-      category="Performance Tracking"
+      featureId="job-opportunities"
+      title="Job Opportunities"
+      subtitle="Discover relevant job openings based on your resume, skills, target role, experience, and preferred location."
+      category="Career Matching"
     >
-      <CareerAnalyticsWorkspace />
+      <JobOpportunitiesWorkspace />
     </FeatureLayout>
   );
 }

@@ -29,10 +29,10 @@ const NAV_ITEMS = [
   { name: "AI Mock Interviews", href: "/interview", icon: Video, badge: "Voice AI" },
   { name: "Coding Arena & DSA", href: "/coding", icon: Code2 },
   { name: "GitHub Intelligence", href: "/github", icon: FolderGit2 },
-  { name: "Career Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Job Opportunities", href: "/analytics", icon: Briefcase, badge: "Live Jobs" },
   { name: "Placement Roadmap", href: "/roadmap", icon: Map },
   { name: "AI Mentorship Agent", href: "/mentor", icon: Bot, badge: "24/7" },
-  { name: "Job Opportunities", href: "/placement", icon: Briefcase },
+  { name: "Placement Intelligence", href: "/placement", icon: Briefcase },
 ];
 
 const BOTTOM_NAV = [

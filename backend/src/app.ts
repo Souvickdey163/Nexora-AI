@@ -21,6 +21,7 @@ import learningRoutes from './routes/learning.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import notificationRoutes from './routes/notification.routes';
 import activityRoutes from './routes/activity.routes';
+import jobRoutes from './routes/job.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -124,6 +125,9 @@ app.use('/api/v1/notifications', notificationRoutes);
 
 app.use('/api/activities', activityRoutes);
 app.use('/api/v1/activities', activityRoutes);
+
+app.use('/api/jobs', jobRoutes);
+app.use('/api/v1/jobs', jobRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

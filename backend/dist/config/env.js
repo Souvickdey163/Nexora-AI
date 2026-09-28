@@ -48,6 +48,10 @@ const envSchema = zod_1.z.object({
     GEMINI_MODEL: zod_1.z.string().optional().default('gemini-2.5-flash'),
     CODEFORCES_API_KEY: zod_1.z.string().optional().default(''),
     CODEFORCES_API_SECRET: zod_1.z.string().optional().default(''),
+    FREECODECAMP_GRAPHQL_URL: zod_1.z.string().optional().default('https://api.freecodecamp.org/graphql'),
+    JOBVETTA_API_KEY: zod_1.z.string().optional().default('jobvetta_secret_key_2026'),
+    ADZUNA_APP_ID: zod_1.z.string().optional().default('7648c839'),
+    ADZUNA_APP_KEY: zod_1.z.string().optional().default('9b6f83468b35f2844ded09aaa14ddf5d'),
 });
 const parseEnv = () => {
     const result = envSchema.safeParse(process.env);

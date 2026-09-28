@@ -8,6 +8,7 @@ import {
   Compass,
   Award,
   BookOpen,
+  Briefcase,
 } from "lucide-react";
 import { GithubIcon } from "@/components/common/GithubIcon";
 
@@ -109,20 +110,21 @@ export const FEATURES: FeatureItem[] = [
     badge: "New",
   },
   {
-    id: "career-analytics",
-    title: "Career Analytics",
-    category: "Performance Tracking",
-    description: "Track coding progress, interview scores, resume health, and overall career readiness.",
-    longDescription: "Unify all your growth metrics in one unified dashboard. Track weekly coding velocity, mock interview improvement curves, and skill readiness indexes.",
-    icon: BarChart3,
+    id: "job-opportunities",
+    title: "Job Opportunities",
+    category: "Career Matching",
+    description: "Discover relevant job openings based on your resume, skills, target role, experience, and preferred location.",
+    longDescription: "Find live job vacancies matched directly against your extracted resume skills and target career role with transparent match percentages.",
+    icon: Briefcase,
     href: "/features/analytics",
     benefits: [
-      "Unified Career Readiness Index (0-100%)",
-      "Skill proficiency breakdown (DSA, Web Dev, System Design)",
-      "Weekly activity heatmaps & milestone tracking",
-      "Benchmarking against peer developer profiles",
+      "Transparent AI skill-matching score (0-100%)",
+      "Live job vacancy search from Jobvetta & Adzuna APIs",
+      "Skill gap detection per job opening",
+      "Direct connection to Learning Hub for missing skills",
     ],
     image: "/images/career-analytics.png",
+    badge: "Live Jobs",
   },
   {
     id: "placement-intelligence",
